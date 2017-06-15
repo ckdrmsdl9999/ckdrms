@@ -1,4 +1,4 @@
-package omok;
+package mew;
 
 import java.io.IOException;
 import java.util.Scanner;

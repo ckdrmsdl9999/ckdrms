@@ -19,37 +19,43 @@ public class MemberUI extends JFrame {
 	public boolean confirm = false;
 	public JTextField idText;
 	public JTextField pwText;
+	public JTextField nameText; // +name 텍스트필드
 	public JButton signUpBtn, cancelBtn;
 	private SixClient client;
 
 	public MemberUI(SixClient client) {
-		setTitle("\uD68C\uC6D0\uAC00\uC785");
+		setTitle("회원가입");
 
 		this.client = client;
-		initialize();
+		join();
 	}
 
-	private void initialize() {
-		setBounds(100, 100, 335, 197);
+	private void join() {
+		setBounds(100, 100, 335, 220);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(null);
 
 		JPanel panel = new JPanel();
 		panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel.setBounds(12, 10, 295, 138);
+		panel.setBounds(12, 10, 295, 200);
 		getContentPane().add(panel);
 		panel.setLayout(null);
 
-		JLabel lblNewLabel = new JLabel("\uC544\uC774\uB514");
-		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		lblNewLabel.setBounds(60, 38, 57, 15);
-		panel.add(lblNewLabel);
+		JLabel idLabel = new JLabel("아이디");
+		idLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		idLabel.setBounds(60, 40, 57, 15);
+		panel.add(idLabel);
 
-		JLabel lblNewLabel_1 = new JLabel("\uBE44\uBC00\uBC88\uD638");
-		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
-		lblNewLabel_1.setBounds(60, 63, 57, 15);
-		panel.add(lblNewLabel_1);
+		JLabel pwLabel = new JLabel("비밀번호");
+		pwLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		pwLabel.setBounds(60, 65, 57, 15);
+		panel.add(pwLabel);
 
+		JLabel nameLabel = new JLabel("이름");	// +이름 레이블
+		nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		nameLabel.setBounds(60, 90, 57, 15);
+		panel.add(nameLabel);
+		
 		idText = new JTextField();
 		idText.addKeyListener(new KeyAdapter() {
 			@Override
@@ -59,7 +65,7 @@ public class MemberUI extends JFrame {
 				}
 			}
 		});
-		idText.setBounds(129, 35, 116, 21);
+		idText.setBounds(129, 40, 116, 21);
 		panel.add(idText);
 		idText.setColumns(10);
 
@@ -74,11 +80,25 @@ public class MemberUI extends JFrame {
 				}
 			}
 		});
-		pwText.setBounds(129, 60, 116, 21);
+		
+		pwText.setBounds(129, 65, 116, 21);
 		panel.add(pwText);
 		pwText.setColumns(10);
 
-		signUpBtn = new JButton("\uAC00\uC785");
+		nameText = new JTextField();	// +이름 텍스트필드
+		nameText.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+					setVisible(false);
+				}
+			}
+		});
+		nameText.setBounds(129, 90, 116, 21);
+		panel.add(nameText);
+		nameText.setColumns(10);
+		
+		signUpBtn = new JButton("가입");
 		signUpBtn.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -92,17 +112,17 @@ public class MemberUI extends JFrame {
 				dispose();
 			}
 		});
-		signUpBtn.setBounds(50, 88, 97, 23);
+		signUpBtn.setBounds(50, 120, 97, 23);
 		panel.add(signUpBtn);
 
-		cancelBtn = new JButton("\uCDE8\uC18C");
+		cancelBtn = new JButton("취소");
 		cancelBtn.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				setVisible(false);
 			}
 		});
-		cancelBtn.setBounds(148, 88, 97, 23);
+		cancelBtn.setBounds(148, 120, 97, 23);
 		panel.add(cancelBtn);
 		setVisible(true);
 	}
@@ -113,7 +133,7 @@ public class MemberUI extends JFrame {
 				// 회원가입정보(아이디+패스워드) 전송
 				client.getDos().writeUTF(
 						User.MEMBERSHIP + "/" + idText.getText() + "/"
-								+ pwText.getText());
+								+ pwText.getText() + "/" + nameText.getText());	// +이름 정보 추가
 				setVisible(false);
 			} catch (IOException e1) {
 				e1.printStackTrace();

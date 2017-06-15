@@ -116,7 +116,7 @@ public class SixClient implements Runnable {
 	public synchronized void dataParsing(String data) {
 		StringTokenizer token = new StringTokenizer(data, "/"); // 토큰 생성
 		String protocol = token.nextToken(); // 토큰으로 분리된 스트링
-		String id, pw, rNum, nick, rName, msg, result;
+		String id, pw, name, rNum, nick, rName, msg, result;
 		System.out.println("받은 데이터 : " + data);
 
 		switch (protocol) {
@@ -136,8 +136,9 @@ public class SixClient implements Runnable {
 			break;
 		case User.MEMBERSHIP: // 회원가입 승인
 			result = token.nextToken();
+			System.out.println(result);
 			if (result.equals("OK")) {
-				errorMsg("회원가입 성공!");
+				errorMsg("성공!");
 			} else {
 				errorMsg("이미 가입되어 있는 아이디입니다.");
 			}
@@ -205,8 +206,8 @@ public class SixClient implements Runnable {
 	// 채팅방 내부 사용자 리스트
 	private void userList(String rNum, StringTokenizer token) {
 		for (int i = 0; i < user.getRoomArray().size(); i++) {
-			if (Integer.parseInt(rNum) == user.getRoomArray().get(i)
-					.getRoomNum()) {
+			if (Integer.parseInt(rNum) == user.getRoomArray().get(i).getRoomNum())
+			{
 
 				// 기존에 리스트가 있을 경우 지워줌
 				if (user.getRoomArray().get(i).getrUI().model != null)
@@ -219,8 +220,7 @@ public class SixClient implements Runnable {
 					String nick = token.nextToken();
 					User tempUser = new User(id, nick);
 
-					user.getRoomArray().get(i).getrUI().model
-							.addElement(tempUser.toString());
+					user.getRoomArray().get(i).getrUI().model.addElement(tempUser.toString());
 				}
 			}
 		}
@@ -241,8 +241,7 @@ public class SixClient implements Runnable {
 			User tempUser = new User(id, nick);
 
 			// 채팅방 사용자노드에 추가
-			restRoom.level_2_1.add(new DefaultMutableTreeNode(tempUser
-					.toString()));
+			restRoom.level_2_1.add(new DefaultMutableTreeNode(tempUser.toString()));
 		}
 		restRoom.userTree.updateUI();
 	}
@@ -274,15 +273,14 @@ public class SixClient implements Runnable {
 				}
 			}
 			// 대기실 사용자노드에 추가
-			restRoom.level_2_2.add(new DefaultMutableTreeNode(tempUser
-					.toString()));
+			restRoom.level_2_2.add(new DefaultMutableTreeNode(tempUser.toString()));
 		}
 		restRoom.userTree.updateUI();
 	}
 
 	// 서버로부터 방리스트를 업데이트하라는 명령을 받음
 	private void roomList(StringTokenizer token) {
-		String rNum, rName;
+		String rNum, rName, rType;	// +rType 추가
 		Room room = new Room();
 
 		// 기존에 리스트가 있을 경우 지워줌
@@ -293,6 +291,7 @@ public class SixClient implements Runnable {
 		while (token.hasMoreTokens()) {
 			rNum = token.nextToken();
 			rName = token.nextToken();
+			rType = token.nextToken();	// +rType 추가
 			int num = Integer.parseInt(rNum);
 
 			// 라스트룸넘버를 업데이트 (최대값+1)
@@ -301,6 +300,7 @@ public class SixClient implements Runnable {
 			}
 			room.setRoomNum(num);
 			room.setRoomName(rName);
+			room.setRoomType(rType);	// +rType set
 
 			restRoom.model.addElement(room.toProtocol());
 		}
@@ -317,7 +317,8 @@ public class SixClient implements Runnable {
 
 	private void login(String nick) {
 		// 로그인정보 가져옴
-		user.setId(login.idText.getText());
+		String id = login.idText.getText();	// +로그인한 아이디
+		user.setId(id);	// +아이디 업데이트
 		user.setNickName(nick);
 
 		// 로그인창 닫고 대기실창 열기
@@ -328,8 +329,8 @@ public class SixClient implements Runnable {
 		restRoom.lb_nick.setText(user.getNickName());
 	}
 
-	private void whisper(String id, String nick, String msg) {
-		restRoom.restRoomArea.append(nick+"("+id+")님의 귓속말 : "+msg+"\n");
+	private void whisper(String id, String name, String msg) {
+		restRoom.restRoomArea.append(name+"("+id+")님의 귓속말 : "+msg+"\n");	// +nick을 name으로 수정
 	}
 
 	private void invite(String id, String rNum) {
@@ -343,8 +344,7 @@ public class SixClient implements Runnable {
 	private void echoMsg(String msg) {
 		// 커서 위치 조정
 		if (restRoom != null) {
-			restRoom.restRoomArea.setCaretPosition(restRoom.restRoomArea
-					.getText().length());
+			restRoom.restRoomArea.setCaretPosition(restRoom.restRoomArea.getText().length());
 			restRoom.restRoomArea.append(msg + "\n");
 		}
 	}

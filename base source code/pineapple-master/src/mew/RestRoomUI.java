@@ -1,53 +1,24 @@
 package mew;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
+import java.util.*;
 
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
+import javax.swing.event.*;
+import javax.swing.tree.*;
 
 public class RestRoomUI extends JFrame implements ActionListener {
 
-	public int lastRoomNum = 100;
-	public JButton makeRoomBtn, getInRoomBtn, whisperBtn, sendBtn;
+	public int lastRoomNum = 1;
+	public JButton makeRoomBtn, makeAnonymousRoomBtn, makeNormalRoomBtn, getInRoomBtn, whisperBtn, sendBtn;
 	public JTree userTree;
 	public JList roomList;
 	public JTextField chatField;
 	public JTextArea restRoomArea;
-	public JLabel lb_id, lb_nick;
+	public JLabel lb_id, lb_nick, lb_name;
 	public JTextField lb_ip;
 
 	private SixClient client;
@@ -59,7 +30,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 	public DefaultMutableTreeNode level_2_2;
 
 	public RestRoomUI(SixClient sixClient) {
-		setTitle("\uBBA4\uBBA4 Chat");
+		setTitle("뮤뮤 Chat");
 		userArray = new ArrayList<User>();
 		client = sixClient;
 		initialize();
@@ -72,33 +43,29 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 
-		JMenu basicMenus = new JMenu("\uC77C\uBC18");
+		JMenu basicMenus = new JMenu("일반");
 		basicMenus.addActionListener(this);
 		menuBar.add(basicMenus);
 
-		JMenuItem changeNickItem = new JMenuItem(
-				"\uB2C9\uB124\uC784 \uBC14\uAFB8\uAE30");
+		JMenuItem changeNickItem = new JMenuItem("닉네임 변경");
 		changeNickItem.addActionListener(this);
 		basicMenus.add(changeNickItem);
 
-		JMenuItem exitItem = new JMenuItem("\uB05D\uB0B4\uAE30");
+		JMenuItem exitItem = new JMenuItem("끝내기");
 		exitItem.addActionListener(this);
 		basicMenus.add(exitItem);
 
-		JMenu helpMenus = new JMenu("\uB3C4\uC6C0\uB9D0");
+		JMenu helpMenus = new JMenu("도움말");
 		helpMenus.addActionListener(this);
 		menuBar.add(helpMenus);
 
-		JMenuItem proInfoItem = new JMenuItem(
-				"\uD504\uB85C\uADF8\uB7A8 \uC815\uBCF4");
+		JMenuItem proInfoItem = new JMenuItem("프로그램 정보");
 		proInfoItem.addActionListener(this);
 		helpMenus.add(proInfoItem);
 		getContentPane().setLayout(null);
 
 		JPanel room = new JPanel();
-		room.setBorder(new TitledBorder(UIManager
-				.getBorder("TitledBorder.border"), "\uCC44\uD305\uBC29",
-				TitledBorder.CENTER, TitledBorder.TOP, null, null));
+		room.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "채팅방",TitledBorder.CENTER, TitledBorder.TOP, null, null));
 		room.setBounds(12, 10, 477, 215);
 		getContentPane().add(room);
 		room.setLayout(new BorderLayout(0, 0));
@@ -116,11 +83,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 				String temp = (String) roomList.getSelectedValue();
 
 				try {
-					client.getUser()
-							.getDos()
-							.writeUTF(
-									User.UPDATE_SELECTEDROOM_USERLIST + "/"
-											+ temp.substring(0, 3));
+					client.getUser().getDos().writeUTF(User.UPDATE_SELECTEDROOM_USERLIST + "/"+ temp.substring(0, 3));
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -133,10 +96,10 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		JPanel panel_2 = new JPanel();
 		room.add(panel_2, BorderLayout.SOUTH);
 
-		makeRoomBtn = new JButton("\uBC29 \uB9CC\uB4E4\uAE30");
-		makeRoomBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
+		makeRoomBtn = new JButton("일반 채팅방 만들기");	// +일반 채팅방 생성
+		makeRoomBtn.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e) { }
 		});
 		makeRoomBtn.addMouseListener(new MouseAdapter() {
 			@Override
@@ -145,10 +108,26 @@ public class RestRoomUI extends JFrame implements ActionListener {
 				createRoom();
 			}
 		});
+		
+		makeAnonymousRoomBtn = new JButton("익명 채팅방 만들기");	// +익명 채팅방 생성
+		makeAnonymousRoomBtn.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e) { }
+		});
+		makeAnonymousRoomBtn.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				// 방만들기 버튼 클릭
+				createAnonymousRoom();
+			}
+		});
+		
+		
 		panel_2.setLayout(new GridLayout(0, 2, 0, 0));
 		panel_2.add(makeRoomBtn);
+		panel_2.add(makeAnonymousRoomBtn);
 
-		getInRoomBtn = new JButton("\uBC29 \uB4E4\uC5B4\uAC00\uAE30");
+		getInRoomBtn = new JButton("방 들어가기");
 		getInRoomBtn.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -160,9 +139,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 
 		JPanel user = new JPanel();
 		user.setBorder(new TitledBorder(UIManager
-				.getBorder("TitledBorder.border"),
-				"\uC0AC\uC6A9\uC790 \uBAA9\uB85D", TitledBorder.CENTER,
-				TitledBorder.TOP, null, null));
+				.getBorder("TitledBorder.border"),"사용자 목록", TitledBorder.CENTER,TitledBorder.TOP, null, null));
 		user.setBounds(501, 10, 171, 215);
 		getContentPane().add(user);
 		user.setLayout(new BorderLayout(0, 0));
@@ -174,8 +151,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		userTree = new JTree();
 		userTree.addTreeSelectionListener(new TreeSelectionListener() {
 			public void valueChanged(TreeSelectionEvent arg0) {
-				currentSelectedTreeNode = arg0.getPath().getLastPathComponent()
-						.toString();
+				currentSelectedTreeNode = arg0.getPath().getLastPathComponent().toString();
 			}
 		});
 		level_1 = new DefaultMutableTreeNode("참여자");
@@ -193,10 +169,11 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		user.add(panel_1, BorderLayout.SOUTH);
 		panel_1.setLayout(new GridLayout(1, 0, 0, 0));
 
-		whisperBtn = new JButton("\uADD3\uC18D\uB9D0");
+		whisperBtn = new JButton("귓속말");
 		whisperBtn.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
+				new OmokGame(15);
 				StringTokenizer token = new StringTokenizer(
 						currentSelectedTreeNode, "("); // 토큰 생성
 				String temp = token.nextToken(); // 토큰으로 분리된 스트링
@@ -212,7 +189,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 
 		JPanel restroom = new JPanel();
 		restroom.setBorder(new TitledBorder(UIManager
-				.getBorder("TitledBorder.border"), "\uB300 \uAE30 \uC2E4",
+				.getBorder("TitledBorder.border"), "대 기 실",
 				TitledBorder.CENTER, TitledBorder.TOP, null, Color.DARK_GRAY));
 		restroom.setBounds(12, 235, 477, 185);
 		getContentPane().add(restroom);
@@ -239,7 +216,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		scrollPane_4.setViewportView(chatField);
 		chatField.setColumns(10);
 
-		sendBtn = new JButton("\uBCF4\uB0B4\uAE30");
+		sendBtn = new JButton("보내기");
 		sendBtn.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -259,7 +236,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 
 		JPanel info = new JPanel();
 		info.setBorder(new TitledBorder(UIManager
-				.getBorder("TitledBorder.border"), "\uB0B4 \uC815\uBCF4",
+				.getBorder("TitledBorder.border"), "내 정보",
 				TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		info.setBounds(501, 235, 171, 185);
 		getContentPane().add(info);
@@ -267,29 +244,38 @@ public class RestRoomUI extends JFrame implements ActionListener {
 
 		JLabel lblNewLabel = new JLabel("IP");
 		lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblNewLabel.setBounds(-25, 54, 57, 15);
+		lblNewLabel.setBounds(-25, 20, 57, 15);
 		info.add(lblNewLabel);
 
-		JLabel lblNewLabel_2 = new JLabel("\uC544\uC774\uB514");
+		JLabel lblNewLabel_2 = new JLabel("아이디");
 		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
-		lblNewLabel_2.setBounds(0, 89, 57, 15);
+		lblNewLabel_2.setBounds(0, 60, 57, 15);
 		info.add(lblNewLabel_2);
 
-		JLabel lblNewLabel_3 = new JLabel("\uB2C9\uB124\uC784");
+		JLabel lblNewLabel_3 = new JLabel("닉네임");
 		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
-		lblNewLabel_3.setBounds(0, 129, 57, 15);
+		lblNewLabel_3.setBounds(0, 100, 57, 15);
 		info.add(lblNewLabel_3);
+		
+		JLabel lblNewLabel_4 = new JLabel("이름");
+		lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel_4.setBounds(0, 140, 57, 15);
+		info.add(lblNewLabel_4);
 
 		lb_id = new JLabel("-");
-		lb_id.setBounds(57, 89, 102, 15);
 		info.add(lb_id);
+		lb_id.setBounds(57, 60, 102, 15);
 
 		lb_nick = new JLabel("-");
-		lb_nick.setBounds(57, 129, 102, 15);
+		lb_nick.setBounds(57, 100, 102, 15);
 		info.add(lb_nick);
 
+		lb_name = new JLabel("-");
+		lb_name.setBounds(57, 140, 102, 15);
+		info.add(lb_name);
+		
 		lb_ip = new JTextField();
-		lb_ip.setBounds(57, 51, 102, 21);
+		lb_ip.setBounds(57, 20, 102, 21);
 		lb_ip.setEditable(false);
 		info.add(lb_ip);
 		lb_ip.setColumns(10);
@@ -308,7 +294,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		switch (e.getActionCommand()) {
 		// 메뉴1 파일 메뉴
-		case "닉네임 바꾸기":
+		case "닉네임 변경":
 			changeNick();
 			break;
 		case "끝내기":
@@ -325,8 +311,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		String temp = JOptionPane.showInputDialog(this, "변경할 닉네임을 입력하세요.");
 		if (temp != null && !temp.equals("")) {
 			try {
-				client.getUser().getDos()
-						.writeUTF(User.CHANGE_NICK + "/" + temp);
+				client.getUser().getDos().writeUTF(User.CHANGE_NICK + "/" + temp);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -373,22 +358,39 @@ public class RestRoomUI extends JFrame implements ActionListener {
 	}
 
 	private void createRoom() {
-		String roomname = "함께 놀아보아요";
+		String roomname = "My room1";
 		Room newRoom = new Room(roomname); // 방 객체 생성
 		newRoom.setRoomNum(lastRoomNum);
 		newRoom.setrUI(new RoomUI(client, newRoom)); // UI
+		newRoom.setRoomType("일반");
 
 		// 클라이언트가 접속한 방 목록에 추가
 		client.getUser().getRoomArray().add(newRoom);
 
 		try {
-			client.getDos().writeUTF(
-					User.CREATE_ROOM + "/" + newRoom.toProtocol());
+			client.getDos().writeUTF(User.CREATE_ROOM + "/" + newRoom.toProtocol());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
+	private void createAnonymousRoom() {	// +익명 채팅방 생성 메소드
+		String roomname = "My room2";
+		Room newRoom = new Room(roomname); // 방 객체 생성
+		newRoom.setRoomNum(lastRoomNum);
+		newRoom.setrUI(new RoomUI(client, newRoom)); // UI
+		newRoom.setRoomType("익명");
+		
+		// 클라이언트가 접속한 방 목록에 추가
+		client.getUser().getRoomArray().add(newRoom);
+
+		try {
+			client.getDos().writeUTF(User.CREATE_ROOM + "/" + newRoom.toProtocol());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private void getIn() {
 		// 선택한 방 정보
 		String selectedRoom = (String) roomList.getSelectedValue();
@@ -404,8 +406,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		client.getUser().getRoomArray().add(theRoom);
 
 		try {
-			client.getDos().writeUTF(
-					User.GETIN_ROOM + "/" + theRoom.getRoomNum());
+			client.getDos().writeUTF(User.GETIN_ROOM + "/" + theRoom.getRoomNum());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

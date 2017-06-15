@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.FileReader;
 import java.io.IOException;
 
 import javax.swing.JButton;
@@ -18,6 +19,7 @@ import java.awt.event.KeyEvent;
 
 public class LoginUI extends JFrame {
 
+	FileReader reader;
 	public boolean confirm = false;
 	public JTextField idText;
 	public JTextField pwText;
@@ -25,9 +27,9 @@ public class LoginUI extends JFrame {
 	public MemberUI mem;
 	public JButton ipBtn;
 	private SixClient client;
-
+	
 	public LoginUI(SixClient sixClient) {
-		setTitle("\uBBA4\uBBA4 - \uB85C\uADF8\uC778");
+		setTitle("뮤뮤 - 로그인");
 		ServerAddress sd = new ServerAddress(this);
 		this.client = sixClient;
 		loginUIInitialize();
@@ -44,18 +46,37 @@ public class LoginUI extends JFrame {
 		getContentPane().add(panel);
 		panel.setLayout(null);
 
-		JLabel lblNewLabel = new JLabel("\uC544\uC774\uB514");
+		JLabel lblNewLabel = new JLabel("아이디");
 		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel.setBounds(60, 55, 57, 15);
 		panel.add(lblNewLabel);
 
-		JLabel lblNewLabel_1 = new JLabel("\uBE44\uBC00\uBC88\uD638");
+		JLabel lblNewLabel_1 = new JLabel("비밀번호");
 		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel_1.setBounds(60, 86, 57, 15);
 		panel.add(lblNewLabel_1);
 
+		String recentId = null;
+		try		// +최근 로그인 아이디 읽어오기 try~catch문
+		{
+			reader = new FileReader("C:\\Users\\Park\\workspace\\MEW\\src\\members\\recent.txt");
+			int read;
+
+			  char[] data = new char[50];
+
+			  while ((read=reader.read(data)) != -1)
+			  {
+				  recentId = new String(data, 0, read);
+			  }
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		} 
+		
 		idText = new JTextField();
 		idText.setBounds(129, 52, 116, 21);
+		idText.setText(recentId);
 		panel.add(idText);
 		idText.setColumns(10);
 
@@ -73,7 +94,7 @@ public class LoginUI extends JFrame {
 		panel.add(pwText);
 		pwText.setColumns(10);
 
-		loginBtn = new JButton("\uB85C\uADF8\uC778");
+		loginBtn = new JButton("로그인");
 		loginBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 			}
@@ -87,7 +108,7 @@ public class LoginUI extends JFrame {
 		loginBtn.setBounds(50, 111, 97, 23);
 		panel.add(loginBtn);
 
-		signUpBtn = new JButton("\uD68C\uC6D0\uAC00\uC785");
+		signUpBtn = new JButton("회원가입");
 		signUpBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
@@ -102,12 +123,12 @@ public class LoginUI extends JFrame {
 		signUpBtn.setBounds(149, 111, 97, 23);
 		panel.add(signUpBtn);
 
-		JLabel lblNewLabel_2 = new JLabel("\uC11C\uBC84\uC544\uC774\uD53C");
+		JLabel lblNewLabel_2 = new JLabel("서버 IP 주소");
 		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel_2.setBounds(12, 10, 78, 15);
 		panel.add(lblNewLabel_2);
 
-		ipBtn = new JButton("\uC544\uC774\uD53C \uC785\uB825");
+		ipBtn = new JButton("IP 주소 입력");
 		ipBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				ServerAddress sd = new ServerAddress(LoginUI.this);
@@ -117,7 +138,7 @@ public class LoginUI extends JFrame {
 		ipBtn.setBounds(93, 6, 97, 23);
 		panel.add(ipBtn);
 	}
-
+	
 	private void msgSummit() {
 		new Thread(new Runnable() {
 			public void run() {
@@ -127,8 +148,7 @@ public class LoginUI extends JFrame {
 					try {
 						// 로그인정보(아이디+패스워드) 전송
 						client.getDos().writeUTF(
-								User.LOGIN + "/" + idText.getText() + "/"
-										+ pwText.getText());
+								User.LOGIN + "/" + idText.getText() + "/"+ pwText.getText());
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}

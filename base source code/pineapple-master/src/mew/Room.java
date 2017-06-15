@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public class Room {
 
 	private int roomNum;
+	private String roomType;	// +방의 종류(일반/익명)
 	private String roomName;
 	private ArrayList<User> userArray; // 채팅방에 접속한 사람들
 	private User maker; // 방장, 방만든사람
@@ -20,14 +21,14 @@ public class Room {
 	}
 
 	public String toProtocol() {
-		return roomNum + "/" + roomName;
+		return roomNum + "/" + roomName + "/" + roomType;	//+roomType까지로 수정
 	}
 
 	// getter/setter
 	public int getRoomNum() {
 		return roomNum;
 	}
-
+	
 	public void setRoomNum(int roomNum) {
 		this.roomNum = roomNum;
 	}
@@ -40,6 +41,14 @@ public class Room {
 		this.roomName = roomName;
 	}
 
+	public String getRoomType() {	// +방 종류 get(일반/익명)
+		return roomType;
+	}
+	public void setRoomType(String roomType){	// +방 종류  set
+
+		this.roomType = roomType;
+	}
+	
 	public ArrayList<User> getUserArray() {
 		return userArray;
 	}

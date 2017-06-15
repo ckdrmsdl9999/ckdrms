@@ -3,6 +3,7 @@ package mew;
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.InetAddress;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -24,7 +25,16 @@ public class ServerAddress extends JFrame {
 	}
 
 	private void initialize() {
-		setTitle("\uC11C\uBC84 \uC544\uC774\uD53C \uC8FC\uC18C \uC785\uB825");
+		String addr = null;
+		try
+		{
+			addr = InetAddress.getLocalHost().getHostAddress();		// +현재 IP를 받아올 수 있게끔 설정
+		}
+		catch(Exception e)
+		{
+			System.out.println("서버 IP 가져오기 실패");	// +IP를 찾지 못했을 경우
+		}
+		setTitle("서버 IP 주소 입력");
 		setBounds(100, 100, 306, 95);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
@@ -47,11 +57,11 @@ public class ServerAddress extends JFrame {
 				}
 			}
 		});
-		ipText.setText("210.125.144.71");
+		ipText.setText(addr);	// 받아온 IP 주소를 기본값으로 써줌
 		panel.add(ipText, BorderLayout.CENTER);
 		ipText.setColumns(10);
 
-		confirmBtn = new JButton("\uD655\uC778");
+		confirmBtn = new JButton("확인");
 		confirmBtn.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {

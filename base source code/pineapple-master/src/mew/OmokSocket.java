@@ -1,4 +1,4 @@
-package omok;
+package mew;
 
 import java.net.Socket;
 import java.net.ServerSocket;
@@ -14,7 +14,7 @@ public class OmokSocket {
 	public DataOutputStream sender;
 	public DataInputStream reciever;
 	private int portNum;
-	private  String serverIP;
+	private String serverIP;
 
 	public OmokSocket() {
 

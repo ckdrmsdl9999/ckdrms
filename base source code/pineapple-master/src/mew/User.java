@@ -5,12 +5,11 @@ import java.io.DataOutputStream;
 import java.util.ArrayList;
 
 public class User {
-	private String defaultNick = "말미잘";
-	private static int nickCnt = 1;
 	private String IP;
 	private String nickName; // 사용자 닉네임
 	private String id; // 사용자 아이디 - IP 주소
 	private String pw; // password
+	private String name; // +사용자 이름
 	private boolean online;
 	private ArrayList<Room> user_rooms; // 사용자가 입장한 방의 목록
 
@@ -48,13 +47,12 @@ public class User {
 	User(DataInputStream dis, DataOutputStream dos) {
 		this.dis = dis;
 		this.dos = dos;
-		nickCnt++;
-		setNickName(defaultNick + nickCnt);
+		setNickName(name);
 		user_rooms = new ArrayList<Room>();
 	}
 
 	public String toStringforLogin() {
-		return id + "/" + pw + "/" + nickName;
+		return id + "/" + pw + "/" + nickName + "/" + name;
 	}
 
 	public String toProtocol() {
@@ -62,9 +60,19 @@ public class User {
 	}
 
 	public String toString() {
-		return nickName + "(" + id + ")";
+		return "<" + name + "(" + id + ")" + ">";
 	}
 
+	public String toNameString()	// +채팅방 내 이름 표시 부분
+	{
+		return "<" + name + ">";
+	}
+	
+	public String toNickNameString()	// +채팅방 내 닉네임 표시 부분
+	{
+		return "<" + nickName + ">";
+	}
+	
 	public String getIP() {
 		return IP;
 	}
@@ -73,6 +81,14 @@ public class User {
 		IP = iP;
 	}
 
+	String getName(){	// +유저이름 get
+		return name;
+	}
+	
+	void setName(String name){	// +유저 이름 set
+		this.name = name;
+	}
+	
 	public String getNickName() {
 		return nickName;
 	}
@@ -128,5 +144,4 @@ public class User {
 	public void setRooms(ArrayList<Room> rooms) {
 		this.user_rooms = rooms;
 	}
-
 }

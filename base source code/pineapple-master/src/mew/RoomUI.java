@@ -47,7 +47,7 @@ public class RoomUI extends JFrame {
 		getContentPane().setLayout(null);
 
 		JPanel panel = new JPanel();
-		panel.setBorder(new TitledBorder(null, "\uCC44\uD305",
+		panel.setBorder(new TitledBorder(null, "채팅",
 				TitledBorder.CENTER, TitledBorder.TOP, null, null));
 		panel.setBounds(12, 10, 300, 358);
 		getContentPane().add(panel);
@@ -60,7 +60,7 @@ public class RoomUI extends JFrame {
 		chatArea.setBackground(new Color(224, 255, 255));
 		chatArea.setEditable(false);
 		scrollPane.setViewportView(chatArea);
-		chatArea.append("◆채팅이 시작 되었다.\n");
+		chatArea.append("◆채팅방이 개설되었습니다.◆");
 
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new TitledBorder(UIManager
@@ -85,7 +85,7 @@ public class RoomUI extends JFrame {
 
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(UIManager
-				.getBorder("TitledBorder.border"), "\uCC38\uC5EC\uC790",
+				.getBorder("TitledBorder.border"), "참여자",
 				TitledBorder.CENTER, TitledBorder.TOP, null, null));
 		panel_2.setBounds(324, 10, 150, 358);
 		getContentPane().add(panel_2);
@@ -98,7 +98,7 @@ public class RoomUI extends JFrame {
 		model = (DefaultListModel) uList.getModel();
 		scrollPane_1.setViewportView(uList);
 
-		JButton roomSendBtn = new JButton("\uBCF4\uB0B4\uAE30");
+		JButton roomSendBtn = new JButton("보내기");
 		roomSendBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				msgSummit();
@@ -120,8 +120,7 @@ public class RoomUI extends JFrame {
 							.writeUTF(
 									User.GETOUT_ROOM + "/" + room.getRoomNum());
 					for (int i = 0; i < client.getUser().getRoomArray().size(); i++) {
-						if (client.getUser().getRoomArray().get(i).getRoomNum() == room
-								.getRoomNum()) {
+						if (client.getUser().getRoomArray().get(i).getRoomNum() == room.getRoomNum()) {
 							client.getUser().getRoomArray().remove(i);
 						}
 					}
@@ -134,12 +133,23 @@ public class RoomUI extends JFrame {
 
 	private void msgSummit() {
 		String string = chatField.getText();
+		String rType = room.getRoomType();
+		
 		if (!string.equals("")) {
 			try {
 				// 채팅방에 메시지 보냄
-				client.getDos().writeUTF(
-						User.ECHO02 + "/" + room.getRoomNum() + "/"
-								+ client.getUser().toString() + string);
+				if(rType.equals("일반"))	// 일반 대화방과 익명 대화방을 구분
+				{
+					client.getDos().writeUTF(
+							User.ECHO02 + "/" + room.getRoomNum() + "/"
+									+ client.getUser().toNameString() + string);
+				}
+				else
+				{
+					client.getDos().writeUTF(
+							User.ECHO02 + "/" + room.getRoomNum() + "/"
+									+ client.getUser().toNickNameString() + string);
+				}
 				chatField.setText("");
 			} catch (IOException e) {
 				e.printStackTrace();
