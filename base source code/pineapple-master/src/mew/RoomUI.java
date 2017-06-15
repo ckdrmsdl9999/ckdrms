@@ -43,7 +43,6 @@ public class RoomUI extends JFrame {
 
 	private void initialize() {
 		setBounds(100, 100, 502, 481);
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(null);
 
 		JPanel panel = new JPanel();
@@ -60,7 +59,7 @@ public class RoomUI extends JFrame {
 		chatArea.setBackground(new Color(224, 255, 255));
 		chatArea.setEditable(false);
 		scrollPane.setViewportView(chatArea);
-		chatArea.append("◆채팅방이 개설되었습니다.◆");
+		chatArea.append("◆채팅방이 개설되었습니다.◆\r\n");
 
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new TitledBorder(UIManager
@@ -115,10 +114,7 @@ public class RoomUI extends JFrame {
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				try {
-					client.getUser()
-							.getDos()
-							.writeUTF(
-									User.GETOUT_ROOM + "/" + room.getRoomNum());
+					client.getUser().getDos().writeUTF(User.GETOUT_ROOM + "/" + room.getRoomNum());
 					for (int i = 0; i < client.getUser().getRoomArray().size(); i++) {
 						if (client.getUser().getRoomArray().get(i).getRoomNum() == room.getRoomNum()) {
 							client.getUser().getRoomArray().remove(i);
@@ -141,14 +137,12 @@ public class RoomUI extends JFrame {
 				if(rType.equals("일반"))	// 일반 대화방과 익명 대화방을 구분
 				{
 					client.getDos().writeUTF(
-							User.ECHO02 + "/" + room.getRoomNum() + "/"
-									+ client.getUser().toNameString() + string);
+							User.ECHO02 + "/" + room.getRoomNum() + "/" + client.getUser().toNameString() + string);
 				}
 				else
 				{
 					client.getDos().writeUTF(
-							User.ECHO02 + "/" + room.getRoomNum() + "/"
-									+ client.getUser().toNickNameString() + string);
+							User.ECHO02 + "/" + room.getRoomNum() + "/" + client.getUser().toNickNameString() + string);
 				}
 				chatField.setText("");
 			} catch (IOException e) {

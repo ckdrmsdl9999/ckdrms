@@ -106,7 +106,8 @@ public class ServerThread implements Runnable {
 			break;
 		case User.CHANGE_NICK: // 닉네임 변경(대기실)
 			nick = token.nextToken();
-			changeNick(nick);
+			name = token.nextToken();
+			changeNick(nick, name);
 			break;
 		case User.CREATE_ROOM: // 방만들기
 			rNum = token.nextToken();
@@ -124,7 +125,7 @@ public class ServerThread implements Runnable {
 			break;
 		case User.ECHO01: // 대기실 에코
 			msg = token.nextToken();
-			echoMsg(User.ECHO01 + "/" + user.toNameString() + msg);
+			echoMsg(User.ECHO01 + "/" + user.toString() + msg);
 			break;
 		case User.ECHO02: // 채팅방 에코
 			rNum = token.nextToken();
@@ -158,7 +159,7 @@ public class ServerThread implements Runnable {
 					if (Integer.parseInt(rNum) == user.getRoomArray().get(j).getRoomNum()) {user.getRoomArray().remove(j);
 					}
 				}
-				echoMsg(roomArray.get(i), user.toNameString() + "님이 퇴장하셨습니다.");
+				echoMsg(roomArray.get(i), user.toString() + "님이 퇴장하셨습니다.");
 				userList(rNum);
 
 				if (roomArray.get(i).getUserArray().size() <= 0) {
@@ -178,7 +179,7 @@ public class ServerThread implements Runnable {
 				user.getRoomArray().add(roomArray.get(i));
 				String roomType = roomArray.get(i).getRoomType();	// +방 종류에 따라 메시지를 분리시켜줌
 				if(roomType.equals("일반"))
-					echoMsg(roomArray.get(i), user.toNameString() + "님이 입장하셨습니다.");
+					echoMsg(roomArray.get(i), user.toString() + "님이 입장하셨습니다.");
 				else
 					echoMsg(roomArray.get(i), user.toNickNameString() + "님이 입장하셨습니다.");
 				userList(rNum);
@@ -190,6 +191,7 @@ public class ServerThread implements Runnable {
 		Room rm = new Room(rName); // 지정한 제목으로 채팅방 생성
 		rm.setMaker(user); // 방장 설정
 		rm.setRoomNum(Integer.parseInt(rNum)); // 방번호 설정
+		rm.setRoomType(rType);
 		
 		rm.getUserArray().add(user); // 채팅방에 유저(본인) 추가
 		roomArray.add(rm); // 룸리스트에 현재 채팅방 추가
@@ -197,14 +199,12 @@ public class ServerThread implements Runnable {
 		
 		if(rType.equals("일반"))	// +익명방과 일반방 개설을 나눠줌
 		{
-			echoMsg(User.ECHO01 + "/" + user.toNameString() + "님이 " + rm.getRoomNum()+ "번 일반 채팅방을 개설하셨습니다.\n\n");
-			rm.setRoomType("일반");
-			echoMsg(rm, user.toNameString() + "님이 입장하셨습니다.");
+			echoMsg(User.ECHO01 + "/" + user.toString() + "님이 " + rm.getRoomNum()+ "번 일반 채팅방을 개설하셨습니다.");
+			echoMsg(rm, user.toString() + "님이 입장하셨습니다.");
 		}
 		else
 		{
-			echoMsg(User.ECHO01 + "/" + user.toNickNameString() + "님이 " + rm.getRoomNum()+ "번 익명 채팅방을 개설하셨습니다.\n\n");		// + 방 타입마다 다른 메시지가 나오게 수정
-			rm.setRoomType("익명");
+			echoMsg(User.ECHO01 + "/" + user.toNickNameString() + "님이 " + rm.getRoomNum()+ "번 익명 채팅방을 개설하셨습니다.");		// + 방 타입마다 다른 메시지가 나오게 수정
 			echoMsg(rm, user.toNickNameString() + "님이 입장하셨습니다.");
 		}
 		roomList();
@@ -218,7 +218,7 @@ public class ServerThread implements Runnable {
 				// 귓속말 상대를 찾으면
 				try {
 					userArray.get(i).getDos().writeUTF(User.WHISPER + "/" + user.toProtocol()+ "/" + msg);
-					jta.append("성공 : 귓속말보냄 : " + user.toNameString() + "가 "+ userArray.get(i).toNameString() + "에게" + "\n");	// +귓속말을 이름으로 주고받게 수정
+					jta.append("성공 : 귓속말보냄 : " + user.toString() + "가 "+ userArray.get(i).toString() + "에게" + "\n");	// +귓속말을 이름으로 주고받게 수정
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -231,7 +231,7 @@ public class ServerThread implements Runnable {
 		for (int i = 0; i < userArray.size(); i++) {
 			try {
 				userArray.get(i).getDos().writeUTF(msg);
-				jta.append(user.toNameString() + " - " + msg + "\n");
+				jta.append(user.toString() + " - " + msg + "\n");
 			} catch (IOException e) {
 				e.printStackTrace();
 				jta.append("에러 : 에코 실패\n");
@@ -263,13 +263,13 @@ public class ServerThread implements Runnable {
 	}
 
 	// 대기실닉네임 변경
-	private void changeNick(String nick) {
+	private void changeNick(String nick, String name) {
 		File file = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + user.getId() + ".txt");
 		FileWriter f;
 		try {
 			f = new FileWriter(file);
 			// 파일에 회원정보쓰기 (아이디+패스워드+닉네임+이름)
-			f.write(user.getId() + "/" + user.getPw() + "/" + nick + "/" + user.getName());	// +이름도 받아오게 추가
+			f.write(user.getId() + "/" + user.getPw() + "/" + nick + "/" + name);	// +이름도 받아오게 추가
 			f.close();
 			thisUser.writeUTF(User.MEMBERSHIP + "/OK");
 		} catch (IOException e1) {
@@ -280,9 +280,10 @@ public class ServerThread implements Runnable {
 		jta.append("성공 : 닉네임변경 : " + user.getId() + "님의 닉네임 +"
 				+ user.getNickName() + "을 " + nick + "로 변경");
 		user.setNickName(nick);
+		user.setName(name);
 
 		try {
-			user.getDos().writeUTF(User.CHANGE_NICK + "/" + nick);
+			user.getDos().writeUTF(User.CHANGE_NICK + "/" + nick + "/" + name);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -390,12 +391,12 @@ public class ServerThread implements Runnable {
 						user.setPw(pw);
 						user.setNickName(token.nextToken());
 						user.setName(token.nextToken());	// +이름 set
-						thisUser.writeUTF(User.LOGIN + "/OK/"+ user.getNickName());
+						thisUser.writeUTF(User.LOGIN + "/OK/"+ user.getNickName() + "/" + user.getName());
 						this.user.setOnline(true);
 
 						// 대기실에 에코
-						echoMsg(User.ECHO01 + "/" + user.toNameString()+ "님이 입장하셨습니다.");	// +이름으로 수정
-						jta.append(user.toNameString() + " : 님이 입장하셨습니다.\n");	// +이름으로 수정
+						echoMsg(User.ECHO01 + "/" + user.toString()+ "님이 입장하셨습니다.");	// +이름으로 수정
+						jta.append(user.toString() + " : 님이 입장하셨습니다.\n");	// +이름으로 수정
 
 						roomList(thisUser);
 						for (int i = 0; i < userArray.size(); i++) {
@@ -447,7 +448,7 @@ public class ServerThread implements Runnable {
 				}
 			}
 		}
-		echoMsg(User.ECHO01 + "/" + user.toNameString() + "님이 퇴장하셨습니다.");
+		echoMsg(User.ECHO01 + "/" + user.toString() + "님이 퇴장하셨습니다.");
 
 		for (int i = 0; i < userArray.size(); i++) {
 			userList(userArray.get(i).getDos());

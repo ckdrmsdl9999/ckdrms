@@ -26,7 +26,6 @@ public class OmokGui extends JFrame{
 		gLineNum *= 30;
 		this.setSize(this.getInsets().left + gLineNum, this.getInsets().top + gLineNum);
 
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 	}
 

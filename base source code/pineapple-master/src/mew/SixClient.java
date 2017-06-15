@@ -116,16 +116,17 @@ public class SixClient implements Runnable {
 	public synchronized void dataParsing(String data) {
 		StringTokenizer token = new StringTokenizer(data, "/"); // 토큰 생성
 		String protocol = token.nextToken(); // 토큰으로 분리된 스트링
-		String id, pw, name, rNum, nick, rName, msg, result;
+		String id, pw, name, rNum, rType, nick, rName, msg, result;
 		System.out.println("받은 데이터 : " + data);
-
+		
 		switch (protocol) {
 		case User.LOGIN: // 로그인
 			// 사용자가 입력한(전송한) 아이디와 패스워드
 			result = token.nextToken();
 			if (result.equals("OK")) {
 				nick = token.nextToken();
-				login(nick);
+				name = token.nextToken();
+				login(nick, name);
 			} else {
 				msg = token.nextToken();
 				errorMsg(msg);
@@ -170,7 +171,8 @@ public class SixClient implements Runnable {
 			break;
 		case User.CHANGE_NICK: // 닉네임 변경(대기실)
 			nick = token.nextToken();
-			changeNick(nick);
+			name = token.nextToken();
+			changeNick(nick, name);
 			break;
 		case User.ECHO01: // 대기실 에코
 			msg = token.nextToken();
@@ -184,8 +186,9 @@ public class SixClient implements Runnable {
 		case User.WHISPER: // 귓속말
 			id = token.nextToken();
 			nick = token.nextToken();
+			name = token.nextToken();
 			msg = token.nextToken();
-			whisper(id, nick, msg);
+			whisper(id, nick, name, msg);
 			break;
 		}
 	}
@@ -218,7 +221,8 @@ public class SixClient implements Runnable {
 					// 아이디와 닉네임을 읽어서 유저 객체 하나를 생성
 					String id = token.nextToken();
 					String nick = token.nextToken();
-					User tempUser = new User(id, nick);
+					String name = token.nextToken();
+					User tempUser = new User(id, nick, name);
 
 					user.getRoomArray().get(i).getrUI().model.addElement(tempUser.toString());
 				}
@@ -238,7 +242,8 @@ public class SixClient implements Runnable {
 			// 아이디와 닉네임을 읽어서 유저 객체 하나를 생성
 			String id = token.nextToken();
 			String nick = token.nextToken();
-			User tempUser = new User(id, nick);
+			String name = token.nextToken();
+			User tempUser = new User(id, nick, name);
 
 			// 채팅방 사용자노드에 추가
 			restRoom.level_2_1.add(new DefaultMutableTreeNode(tempUser.toString()));
@@ -262,7 +267,8 @@ public class SixClient implements Runnable {
 			// 아이디와 닉네임을 읽어서 유저 객체 하나를 생성
 			String id = token.nextToken();
 			String nick = token.nextToken();
-			User tempUser = new User(id, nick);
+			String name = token.nextToken();
+			User tempUser = new User(id, nick, name);
 
 			for (int i = 0; i < restRoom.userArray.size(); i++) {
 				if (tempUser.getId().equals(restRoom.userArray.get(i))) {
@@ -315,11 +321,12 @@ public class SixClient implements Runnable {
 		}
 	}
 
-	private void login(String nick) {
+	private void login(String nick, String name) {
 		// 로그인정보 가져옴
 		String id = login.idText.getText();	// +로그인한 아이디
 		user.setId(id);	// +아이디 업데이트
 		user.setNickName(nick);
+		user.setName(name);
 
 		// 로그인창 닫고 대기실창 열기
 		login.dispose();
@@ -327,18 +334,21 @@ public class SixClient implements Runnable {
 		restRoom.lb_id.setText(user.getId());
 		restRoom.lb_ip.setText(user.getIP());
 		restRoom.lb_nick.setText(user.getNickName());
+		restRoom.lb_name.setText(user.getName());
 	}
 
-	private void whisper(String id, String name, String msg) {
-		restRoom.restRoomArea.append(name+"("+id+")님의 귓속말 : "+msg+"\n");	// +nick을 name으로 수정
+	private void whisper(String id, String nickName, String name, String msg) {
+		restRoom.restRoomArea.append(nickName + name + "("+id+")님의 귓속말 : "+msg+"\n");	// +nick을 name으로 수정
 	}
 
 	private void invite(String id, String rNum) {
 	}
 
-	private void changeNick(String nick) {
+	private void changeNick(String nick, String name) {
 		user.setNickName(nick);
+		user.setName(name);
 		restRoom.lb_nick.setText(nick);
+		restRoom.lb_name.setText(name);
 	}
 
 	private void echoMsg(String msg) {

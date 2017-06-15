@@ -39,15 +39,17 @@ public class User {
 
 	}
 
-	User(String id, String nick) {
+	User(String id, String nick, String name) {
 		this.id = id;
 		this.nickName = nick;
+		this.name = name;
 	}
 
 	User(DataInputStream dis, DataOutputStream dos) {
 		this.dis = dis;
 		this.dos = dos;
-		setNickName(name);
+		setNickName(nickName);
+		setName(name);
 		user_rooms = new ArrayList<Room>();
 	}
 
@@ -56,21 +58,20 @@ public class User {
 	}
 
 	public String toProtocol() {
-		return id + "/" + nickName;
+		return id + "/" + nickName + "/" + name;
 	}
 
 	public String toString() {
-		return "<" + name + "(" + id + ")" + ">";
+		return "[" + name + "(" + id + ")" + "]";
 	}
-
 	public String toNameString()	// +채팅방 내 이름 표시 부분
 	{
-		return "<" + name + ">";
+		return "[" + name + "]";
 	}
 	
 	public String toNickNameString()	// +채팅방 내 닉네임 표시 부분
 	{
-		return "<" + nickName + ">";
+		return "[" + nickName + "]";
 	}
 	
 	public String getIP() {

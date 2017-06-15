@@ -38,7 +38,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 
 	private void initialize() {
 		setBounds(100, 100, 700, 500);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		// 대기실 창을 끄면 열려있는 연결된 모든 창이 꺼짐
 
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -252,12 +252,12 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		lblNewLabel_2.setBounds(0, 60, 57, 15);
 		info.add(lblNewLabel_2);
 
-		JLabel lblNewLabel_3 = new JLabel("닉네임");
+		JLabel lblNewLabel_3 = new JLabel("이름");
 		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel_3.setBounds(0, 100, 57, 15);
 		info.add(lblNewLabel_3);
 		
-		JLabel lblNewLabel_4 = new JLabel("이름");
+		JLabel lblNewLabel_4 = new JLabel("닉네임");
 		lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel_4.setBounds(0, 140, 57, 15);
 		info.add(lblNewLabel_4);
@@ -266,13 +266,13 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		info.add(lb_id);
 		lb_id.setBounds(57, 60, 102, 15);
 
-		lb_nick = new JLabel("-");
-		lb_nick.setBounds(57, 100, 102, 15);
-		info.add(lb_nick);
-
 		lb_name = new JLabel("-");
-		lb_name.setBounds(57, 140, 102, 15);
+		lb_name.setBounds(57, 100, 102, 15);
 		info.add(lb_name);
+		
+		lb_nick = new JLabel("-");
+		lb_nick.setBounds(57, 140, 102, 15);
+		info.add(lb_nick);
 		
 		lb_ip = new JTextField();
 		lb_ip.setBounds(57, 20, 102, 21);
@@ -397,10 +397,12 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		StringTokenizer token = new StringTokenizer(selectedRoom, "/"); // 토큰 생성
 		String rNum = token.nextToken();
 		String rName = token.nextToken();
+		String rType = token.nextToken();
 
 		Room theRoom = new Room(rName); // 방 객체 생성
 		theRoom.setRoomNum(Integer.parseInt(rNum)); // 방번호 설정
 		theRoom.setrUI(new RoomUI(client, theRoom)); // UI
+		theRoom.setRoomType(rType);
 
 		// 클라이언트가 접속한 방 목록에 추가
 		client.getUser().getRoomArray().add(theRoom);
