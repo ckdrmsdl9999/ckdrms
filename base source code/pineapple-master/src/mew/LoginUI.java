@@ -6,6 +6,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetAddress;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -20,7 +21,7 @@ import java.awt.event.KeyEvent;
 public class LoginUI extends JFrame {
 
 	FileReader reader;
-	public boolean confirm = false;
+	String addr;
 	public JTextField idText;
 	public JTextField pwText;
 	public JButton loginBtn, signUpBtn;
@@ -29,10 +30,20 @@ public class LoginUI extends JFrame {
 	private SixClient client;
 	
 	public LoginUI(SixClient sixClient) {
-		setTitle("뮤뮤 - 로그인");
-		ServerAddress sd = new ServerAddress(this);
+		setTitle("로그인");
 		this.client = sixClient;
 		loginUIInitialize();
+		
+		try
+		{
+			addr = InetAddress.getLocalHost().getHostAddress();		// +현재 IP를 받아올 수 있게끔 설정
+		}
+		catch(Exception e)
+		{
+			System.out.println("서버 IP 가져오기 실패");	// +IP를 찾지 못했을 경우
+		}
+		
+		this.setVisible(true);
 	}
 
 	private void loginUIInitialize() {
@@ -122,21 +133,6 @@ public class LoginUI extends JFrame {
 		});
 		signUpBtn.setBounds(149, 111, 97, 23);
 		panel.add(signUpBtn);
-
-		JLabel lblNewLabel_2 = new JLabel("서버 IP 주소");
-		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
-		lblNewLabel_2.setBounds(12, 10, 78, 15);
-		panel.add(lblNewLabel_2);
-
-		ipBtn = new JButton("IP 주소 입력");
-		ipBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				ServerAddress sd = new ServerAddress(LoginUI.this);
-				setVisible(false);
-			}
-		});
-		ipBtn.setBounds(93, 6, 97, 23);
-		panel.add(ipBtn);
 	}
 	
 	private void msgSummit() {

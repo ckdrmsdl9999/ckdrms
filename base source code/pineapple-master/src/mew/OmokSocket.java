@@ -12,7 +12,7 @@ public class OmokSocket {
 	private ServerSocket myServerSocket;
 	private Socket mySocket;
 	public DataOutputStream sender;
-	public DataInputStream reciever;
+	public DataInputStream receiver;
 	private int portNum;
 	private String serverIP;
 
@@ -25,7 +25,7 @@ public class OmokSocket {
 			myServerSocket = new ServerSocket(portNum);
 			mySocket = myServerSocket.accept();
 			sender = new DataOutputStream(mySocket.getOutputStream());
-			reciever = new DataInputStream(mySocket.getInputStream());
+			receiver = new DataInputStream(mySocket.getInputStream());
 		}
 		catch(IOException ioex){
 			System.out.println(ioex);
@@ -37,7 +37,7 @@ public class OmokSocket {
 		try{
 			mySocket = new Socket(serverIP, portNum);
 			sender = new DataOutputStream(mySocket.getOutputStream());
-			reciever = new DataInputStream(mySocket.getInputStream());
+			receiver = new DataInputStream(mySocket.getInputStream());
 		}
 		catch(IOException ioex){
 			System.out.println(ioex);

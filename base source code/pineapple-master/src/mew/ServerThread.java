@@ -1,3 +1,4 @@
+
 package mew;
 
 import java.io.DataInputStream;
@@ -20,9 +21,8 @@ public class ServerThread implements Runnable {
 	private boolean onLine = true;
 
 	private DataOutputStream thisUser;
-
-	ServerThread(JTextArea jta, User person, ArrayList<User> userArray,
-			ArrayList<Room> roomArray) {
+	
+	ServerThread(JTextArea jta, User person, ArrayList<User> userArray, ArrayList<Room> roomArray) {
 		this.roomArray = roomArray;
 		this.userArray = userArray;
 		this.userArray.add(person); // 배열에 사용자 추가
@@ -174,7 +174,10 @@ public class ServerThread implements Runnable {
 		for (int i = 0; i < roomArray.size(); i++) {
 			if (Integer.parseInt(rNum) == roomArray.get(i).getRoomNum()) {
 				// 방 객체가 있는 경우, 방에 사용자추가
-				roomArray.get(i).getUserArray().add(user);
+				ArrayList<User> al = roomArray.get(i).getUserArray();
+				al.add(user);
+				roomArray.get(i).setUserArray(al);
+				
 				// 사용자 객체에 방 추가
 				user.getRoomArray().add(roomArray.get(i));
 				String roomType = roomArray.get(i).getRoomType();	// +방 종류에 따라 메시지를 분리시켜줌
@@ -277,8 +280,7 @@ public class ServerThread implements Runnable {
 		}
 
 		// 닉네임은 중복허용함
-		jta.append("성공 : 닉네임변경 : " + user.getId() + "님의 닉네임 +"
-				+ user.getNickName() + "을 " + nick + "로 변경");
+		jta.append("성공 : 닉네임변경 : " + user.getId() + "님의 닉네임 +"+ user.getNickName() + "을 " + nick + "로 변경");
 		user.setNickName(nick);
 		user.setName(name);
 
@@ -481,9 +483,7 @@ public class ServerThread implements Runnable {
 			if (Integer.parseInt(rNum) == roomArray.get(i).getRoomNum()) {
 				for (int j = 0; j < roomArray.get(i).getUserArray().size(); j++) {
 					// 채팅방에 접속되어 있는 유저들의 아이디+닉네임
-					ul += "/"
-							+ roomArray.get(i).getUserArray().get(j)
-									.toProtocol();
+					ul += "/" + roomArray.get(i).getUserArray().get(j).toProtocol();
 				}
 			}
 		}
@@ -523,9 +523,7 @@ public class ServerThread implements Runnable {
 			if (Integer.parseInt(rNum) == roomArray.get(i).getRoomNum()) {
 				for (int j = 0; j < roomArray.get(i).getUserArray().size(); j++) {
 					// 채팅방에 접속되어 있는 유저들의 아이디+닉네임
-					ul += "/"
-							+ roomArray.get(i).getUserArray().get(j)
-									.toProtocol();
+					ul += "/" + roomArray.get(i).getUserArray().get(j).toProtocol();
 				}
 			}
 		}

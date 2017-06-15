@@ -82,7 +82,7 @@ public class SixClient implements Runnable {
 			// 소켓이 연결이 이루어지지 않은 경우에만 실행
 			// 즉, 처음 연결시에만 실행
 			socket = null;
-			IP = login.ipBtn.getText();
+			IP = login.addr;	// +로그인 시 ip주소를 입력하지 않도록 해당 통신 서버의 ip를 받아옴
 			try {
 				// 서버접속
 				InetSocketAddress inetSockAddr = new InetSocketAddress(
@@ -211,11 +211,9 @@ public class SixClient implements Runnable {
 		for (int i = 0; i < user.getRoomArray().size(); i++) {
 			if (Integer.parseInt(rNum) == user.getRoomArray().get(i).getRoomNum())
 			{
-
 				// 기존에 리스트가 있을 경우 지워줌
 				if (user.getRoomArray().get(i).getrUI().model != null)
-					user.getRoomArray().get(i).getrUI().model
-							.removeAllElements();
+					user.getRoomArray().get(i).getrUI().model.removeAllElements();
 
 				while (token.hasMoreTokens()) {
 					// 아이디와 닉네임을 읽어서 유저 객체 하나를 생성
@@ -224,7 +222,11 @@ public class SixClient implements Runnable {
 					String name = token.nextToken();
 					User tempUser = new User(id, nick, name);
 
-					user.getRoomArray().get(i).getrUI().model.addElement(tempUser.toString());
+					String rType = user.getRoomArray().get(i).getRoomType();	// 방 타입을 받아옴
+					if(rType.equals("일반"))	// +일반 채팅방일 경우	목록에 이름과 아이디가 뜨게하고
+						user.getRoomArray().get(i).getrUI().model.addElement(tempUser.toString());
+					else	// +익명 채팅방일 경우 목록에 닉네임만 뜨게 설정
+						user.getRoomArray().get(i).getrUI().model.addElement(tempUser.toNickNameString());
 				}
 			}
 		}
@@ -338,7 +340,7 @@ public class SixClient implements Runnable {
 	}
 
 	private void whisper(String id, String nickName, String name, String msg) {
-		restRoom.restRoomArea.append(nickName + name + "("+id+")님의 귓속말 : "+msg+"\n");	// +nick을 name으로 수정
+		restRoom.restRoomArea.append("("+id+")님의 귓속말 : "+msg+"\n");	// 귓속말은 id로만 주고받게 수정
 	}
 
 	private void invite(String id, String rNum) {

@@ -37,6 +37,7 @@ public class SixServer extends JFrame implements Runnable {
 	SixServer() {
 		userArray = new ArrayList<User>();
 		roomArray = new ArrayList<Room>();
+		
 		setTitle("뮤뮤 서버");
 		setSize(sizeX, sizeY);
 
@@ -133,8 +134,7 @@ public class SixServer extends JFrame implements Runnable {
 			person.setIP(socket.getInetAddress().getHostName()); // 아이피주소 설정
 			// 부여
 
-			Thread thread = new Thread(new ServerThread(jta, person,
-					userArray, roomArray));
+			Thread thread = new Thread(new ServerThread(jta, person, userArray, roomArray));	//+
 			thread.start(); // 스레드 시작
 		}
 	}

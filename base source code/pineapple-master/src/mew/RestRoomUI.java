@@ -16,6 +16,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 	public JButton makeRoomBtn, makeAnonymousRoomBtn, makeNormalRoomBtn, getInRoomBtn, whisperBtn, sendBtn;
 	public JTree userTree;
 	public JList roomList;
+	public Room[] roomArray;	//+방 객체들의 목록
 	public JTextField chatField;
 	public JTextArea restRoomArea;
 	public JLabel lb_id, lb_nick, lb_name;
@@ -29,14 +30,16 @@ public class RestRoomUI extends JFrame implements ActionListener {
 	public DefaultMutableTreeNode level_2_1;
 	public DefaultMutableTreeNode level_2_2;
 
-	public RestRoomUI(SixClient sixClient) {
-		setTitle("뮤뮤 Chat");
+	public RestRoomUI(SixClient sixClient) 
+	{
+		setTitle("대기실");
 		userArray = new ArrayList<User>();
 		client = sixClient;
 		initialize();
 	}
 
-	private void initialize() {
+	private void initialize() 
+	{
 		setBounds(100, 100, 700, 500);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		// 대기실 창을 끄면 열려있는 연결된 모든 창이 꺼짐
 
@@ -75,16 +78,21 @@ public class RestRoomUI extends JFrame implements ActionListener {
 
 		// 리스트 객체와 모델 생성
 		roomList = new JList(new DefaultListModel());
-		roomList.addMouseListener(new MouseAdapter() {
+		roomList.addMouseListener(new MouseAdapter() 
+		{
 			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void mouseClicked(MouseEvent e) 
+			{
 				// 채팅방 목록 중 하나를 선택한 경우,
 				// 선택한 방의 방번호를 전송
 				String temp = (String) roomList.getSelectedValue();
 
-				try {
+				try
+				{
 					client.getUser().getDos().writeUTF(User.UPDATE_SELECTEDROOM_USERLIST + "/"+ temp.substring(0, 3));
-				} catch (IOException e1) {
+				}
+				catch (IOException e1)
+				{
 					e1.printStackTrace();
 				}
 			}
@@ -101,11 +109,13 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		{
 			public void actionPerformed(ActionEvent e) { }
 		});
-		makeRoomBtn.addMouseListener(new MouseAdapter() {
+		makeRoomBtn.addMouseListener(new MouseAdapter() 
+		{
 			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				// 방만들기 버튼 클릭
-				createRoom();
+			public void mouseClicked(MouseEvent arg0) 
+			{	// 방만들기 버튼 클릭
+				String roomName = JOptionPane.showInputDialog(null, "방 제목을 입력하세요.");	// 방 이름을 입력받음
+				createRoom(roomName);
 			}
 		});
 		
@@ -114,23 +124,29 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		{
 			public void actionPerformed(ActionEvent e) { }
 		});
-		makeAnonymousRoomBtn.addMouseListener(new MouseAdapter() {
+		makeAnonymousRoomBtn.addMouseListener(new MouseAdapter() 
+		{
 			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				// 방만들기 버튼 클릭
-				createAnonymousRoom();
+			public void mouseClicked(MouseEvent arg0) 
+			{	// 방만들기 버튼 클릭
+				String roomName = JOptionPane.showInputDialog(null, "방 제목을 입력하세요.");	// 방 이름을 입력받음
+				createAnonymousRoom(roomName);
 			}
 		});
 		
+		makeRoomBtn.setSize(250, 50);
+		makeAnonymousRoomBtn.setSize(250, 50);
 		
-		panel_2.setLayout(new GridLayout(0, 2, 0, 0));
 		panel_2.add(makeRoomBtn);
 		panel_2.add(makeAnonymousRoomBtn);
 
-		getInRoomBtn = new JButton("방 들어가기");
-		getInRoomBtn.addMouseListener(new MouseAdapter() {
+		getInRoomBtn = new JButton("방 입장하기");
+		getInRoomBtn.setSize(250, 50);
+		getInRoomBtn.addMouseListener(new MouseAdapter() 
+		{
 			@Override
-			public void mouseClicked(MouseEvent arg0) {
+			public void mouseClicked(MouseEvent arg0)
+			{
 				// 방 들어가기
 				getIn();
 			}
@@ -138,8 +154,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		panel_2.add(getInRoomBtn);
 
 		JPanel user = new JPanel();
-		user.setBorder(new TitledBorder(UIManager
-				.getBorder("TitledBorder.border"),"사용자 목록", TitledBorder.CENTER,TitledBorder.TOP, null, null));
+		user.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"),"사용자 목록", TitledBorder.CENTER,TitledBorder.TOP, null, null));
 		user.setBounds(501, 10, 171, 215);
 		getContentPane().add(user);
 		user.setLayout(new BorderLayout(0, 0));
@@ -149,8 +164,10 @@ public class RestRoomUI extends JFrame implements ActionListener {
 
 		// 사용자목록, 트리구조
 		userTree = new JTree();
-		userTree.addTreeSelectionListener(new TreeSelectionListener() {
-			public void valueChanged(TreeSelectionEvent arg0) {
+		userTree.addTreeSelectionListener(new TreeSelectionListener() 
+		{
+			public void valueChanged(TreeSelectionEvent arg0) 
+			{
 				currentSelectedTreeNode = arg0.getPath().getLastPathComponent().toString();
 			}
 		});
@@ -170,18 +187,17 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		panel_1.setLayout(new GridLayout(1, 0, 0, 0));
 
 		whisperBtn = new JButton("귓속말");
-		whisperBtn.addMouseListener(new MouseAdapter() {
+		whisperBtn.addMouseListener(new MouseAdapter()
+		{
 			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				new OmokGame(15);
-				StringTokenizer token = new StringTokenizer(
-						currentSelectedTreeNode, "("); // 토큰 생성
+			public void mouseClicked(MouseEvent arg0) 
+			{
+				StringTokenizer token = new StringTokenizer(currentSelectedTreeNode, "("); // 토큰 생성
 				String temp = token.nextToken(); // 토큰으로 분리된 스트링
 				temp = token.nextToken();
 
 				// 닉네임 제외하고 아이디만 따옴
-				chatField.setText("/" + temp.substring(0, temp.length() - 1)
-						+ " ");
+				chatField.setText("/" + temp.substring(0, temp.length() - 1)+ " ");
 				chatField.requestFocus();
 			}
 		});
@@ -204,22 +220,26 @@ public class RestRoomUI extends JFrame implements ActionListener {
 
 		chatField = new JTextField();
 
-		chatField.addKeyListener(new KeyAdapter() {
+		chatField.addKeyListener(new KeyAdapter() 
+		{
 			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+			public void keyPressed(KeyEvent e)
+			{
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) 
+				{
 					msgSummit();
 				}
 			}
-
 		});
 		scrollPane_4.setViewportView(chatField);
 		chatField.setColumns(10);
 
 		sendBtn = new JButton("보내기");
-		sendBtn.addMouseListener(new MouseAdapter() {
+		sendBtn.addMouseListener(new MouseAdapter()
+		{
 			@Override
-			public void mouseClicked(MouseEvent arg0) {
+			public void mouseClicked(MouseEvent arg0)
+			{
 				msgSummit();
 				chatField.requestFocus();
 			}
@@ -283,16 +303,20 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		setVisible(true);
 		chatField.requestFocus();
 
-		this.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
+		this.addWindowListener(new WindowAdapter() 
+		{	
+			public void windowClosing(WindowEvent e) 
+			{
 				exit();
 			}
 		});
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
-		switch (e.getActionCommand()) {
+	public void actionPerformed(ActionEvent e) 
+	{
+		switch (e.getActionCommand()) 
+		{
 		// 메뉴1 파일 메뉴
 		case "닉네임 변경":
 			changeNick();
@@ -307,41 +331,55 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		}
 	}
 
-	private void changeNick() {
-		String temp = JOptionPane.showInputDialog(this, "변경할 닉네임을 입력하세요.");
-		if (temp != null && !temp.equals("")) {
-			try {
-				client.getUser().getDos().writeUTF(User.CHANGE_NICK + "/" + temp);
-			} catch (IOException e) {
+	private void changeNick() 
+	{
+		String temp = JOptionPane.showInputDialog(this, "변경할 닉네임을 입력하세요.", "닉네임 변경");
+		if (temp != null && !temp.equals("")) 
+		{
+			try 
+			{
+				client.getUser().getDos().writeUTF(User.CHANGE_NICK + "/" + temp + "/" + client.getUser().getName());
+			} 
+			catch (IOException e) 
+			{
 				e.printStackTrace();
 			}
 		}
 	}
 
-	private void msgSummit() {
+	private void msgSummit()
+	{
 		// 메시지전송
 		String string = chatField.getText();
 
-		if (!string.equals("")) {
-			if (string.substring(0, 1).equals("/")) {
-				StringTokenizer token = new StringTokenizer(string, " "); // 토큰
-																			// 생성
+		if (!string.equals("")) 
+		{
+			if (string.substring(0, 1).equals("/")) 
+			{
+				StringTokenizer token = new StringTokenizer(string, " "); // 토큰																			// 생성
 				String id = token.nextToken(); // 토큰으로 분리된 스트링
 				String msg = token.nextToken();
 
-				try {
+				try 
+				{
 					client.getDos().writeUTF(User.WHISPER + id + "/" + msg);
-					restRoomArea.append(id + "님에게 귓속말 : " + msg + "\n");
-				} catch (IOException e) {
+					restRoomArea.append("("+id+")" + "님에게 귓속말 : " + msg + "\n");
+				}
+				catch (IOException e) 
+				{
 					e.printStackTrace();
 				}
 				chatField.setText("");
-			} else {
-
-				try {
+			} 
+			else
+			{
+				try
+				{
 					// 대기실에 메시지 보냄
 					client.getDos().writeUTF(User.ECHO01 + "/" + string);
-				} catch (IOException e) {
+				} 
+				catch (IOException e) 
+				{
 					e.printStackTrace();
 				}
 				chatField.setText("");
@@ -349,49 +387,59 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		}
 	}
 
-	private void exit() {
-		try {
+	private void exit() 
+	{
+		try 
+		{
 			client.getUser().getDos().writeUTF(User.LOGOUT);
-		} catch (IOException e) {
+		} 
+		catch (IOException e)
+		{
 			e.printStackTrace();
 		}
 	}
 
-	private void createRoom() {
-		String roomname = "My room1";
-		Room newRoom = new Room(roomname); // 방 객체 생성
+	private void createRoom(String roomName) 
+	{
+		Room newRoom = new Room(roomName); // 방 객체 생성
 		newRoom.setRoomNum(lastRoomNum);
-		newRoom.setrUI(new RoomUI(client, newRoom)); // UI
 		newRoom.setRoomType("일반");
+		newRoom.setrUI(new RoomUI(client, newRoom)); // UI
 
 		// 클라이언트가 접속한 방 목록에 추가
 		client.getUser().getRoomArray().add(newRoom);
-
-		try {
+		try
+		{
 			client.getDos().writeUTF(User.CREATE_ROOM + "/" + newRoom.toProtocol());
-		} catch (IOException e) {
+		}
+		catch (IOException e) 
+		{
 			e.printStackTrace();
 		}
 	}
 
-	private void createAnonymousRoom() {	// +익명 채팅방 생성 메소드
-		String roomname = "My room2";
-		Room newRoom = new Room(roomname); // 방 객체 생성
+	private void createAnonymousRoom(String roomName) 
+	{	// +익명 채팅방 생성 메소드
+		Room newRoom = new Room(roomName); // 방 객체 생성
 		newRoom.setRoomNum(lastRoomNum);
-		newRoom.setrUI(new RoomUI(client, newRoom)); // UI
 		newRoom.setRoomType("익명");
+		newRoom.setrUI(new RoomUI(client, newRoom)); // UI
 		
 		// 클라이언트가 접속한 방 목록에 추가
 		client.getUser().getRoomArray().add(newRoom);
 
-		try {
+		try 
+		{
 			client.getDos().writeUTF(User.CREATE_ROOM + "/" + newRoom.toProtocol());
-		} catch (IOException e) {
+		} 
+		catch (IOException e) 
+		{
 			e.printStackTrace();
 		}
 	}
 	
-	private void getIn() {
+	private void getIn() 
+	{
 		// 선택한 방 정보
 		String selectedRoom = (String) roomList.getSelectedValue();
 		StringTokenizer token = new StringTokenizer(selectedRoom, "/"); // 토큰 생성
@@ -399,22 +447,34 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		String rName = token.nextToken();
 		String rType = token.nextToken();
 
+		for(int i=0; i<client.getUser().getRoomArray().size(); i++)	// +접속 중인 방 번호 목록에 접속 시도한 방의 번호가 있을 경우 
+		{
+			if(client.getUser().getRoomArray().get(i).getRoomNum() == Integer.parseInt(rNum))
+			{
+				return;	// 입장 불가
+			}
+		}
+		
 		Room theRoom = new Room(rName); // 방 객체 생성
 		theRoom.setRoomNum(Integer.parseInt(rNum)); // 방번호 설정
+		theRoom.setRoomType(rType);	// +방 타입 설정
 		theRoom.setrUI(new RoomUI(client, theRoom)); // UI
-		theRoom.setRoomType(rType);
-
+		
 		// 클라이언트가 접속한 방 목록에 추가
 		client.getUser().getRoomArray().add(theRoom);
 
-		try {
+		try
+		{
 			client.getDos().writeUTF(User.GETIN_ROOM + "/" + theRoom.getRoomNum());
-		} catch (IOException e) {
+		} 
+		catch (IOException e)
+		{
 			e.printStackTrace();
 		}
 	}
 
-	public void maker() {
+	public void maker() 
+	{
 		JDialog maker = new JDialog();
 		Maker m = new Maker();
 		maker.setTitle("프로그램 정보");
@@ -427,12 +487,14 @@ public class RestRoomUI extends JFrame implements ActionListener {
 }
 
 class Maker extends JPanel {
-	public Maker() {
+	public Maker() 
+	{
 		super();
 		initialize();
 	}
 
-	private void initialize() {
+	private void initialize() 
+	{
 		this.setLayout(new GridLayout(3, 1));
 
 		JLabel j1 = new JLabel("       프로그램 제작자 : 청년취업아카데미");

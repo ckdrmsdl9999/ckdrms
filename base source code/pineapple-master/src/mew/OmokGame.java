@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.util.Scanner;
 import javax.swing.JOptionPane;
 import java.net.InetAddress;
+import java.util.*;
 
 public class OmokGame {
 	protected OmokSocket mySocket;
@@ -16,8 +17,11 @@ public class OmokGame {
 	public boolean myTurn;
 	public boolean solo;
 	public boolean start;
-	private static final String[] answer = {"YES", "NO"};
+	private static final String[] playMode = {"혼자 하기", "둘이서 하기"};
+	private static final String[] joinMode = {"게임 생성(선공)", "게임 참여(후공)"};
 
+	Random random = new Random();
+	
 	public OmokGame(int lineNum)
 	{//for now with Pane
 		start = false;
@@ -47,17 +51,16 @@ public class OmokGame {
 		socketInit(host, portNum, ipNum);
 		gameGui = new OmokGui(lineNum, this);
 		start = true;
-		if(!solo && !myTurn)
+		if(!solo && !myTurn)	
 		{
 			otherPut();
-
 		}
 	}
 
 	private void baseSettingsWithPane()
 	{
-		String input = (String) JOptionPane.showInputDialog(null, "Do you want solo play?", "Input", JOptionPane.QUESTION_MESSAGE, null, answer, answer[0]);
-		if(input.equals("YES"))
+		String input = (String) JOptionPane.showInputDialog(null, "혼자 하기 / 둘이서 하기", "플레이 모드 선택", JOptionPane.QUESTION_MESSAGE, null, playMode, playMode[0]);
+		if(input.equals("혼자 하기"))
 		{
 			solo = true;
 		}
@@ -79,14 +82,14 @@ public class OmokGame {
 		{
 			e.getMessage();
 		}
-		String input = (String) JOptionPane.showInputDialog(null, "Do you want to be a host.", "Input", JOptionPane.QUESTION_MESSAGE, null, answer, answer[0]);
-		if(input.equals("YES"))
+		String input = (String) JOptionPane.showInputDialog(null, "게임 생성 / 게임 참여", "참여 모드", JOptionPane.QUESTION_MESSAGE, null, joinMode, joinMode[0]);
+		if(input.equals("게임 생성(선공)"))	// 게임을 생성한 쪽이 서버가 됨
 		{
 			String portNum = JOptionPane.showInputDialog("Enter portNum");
 			mySocket.beServer(Integer.parseInt(portNum));
 			myTurn = true;
 		}
-		else
+		else	// 게임을 참가한 쪽이 클라이언트가 됨
 		{
 			String ipNum = addr.getHostAddress().toString();
 			String portNum = JOptionPane.showInputDialog("Enter portNum");
@@ -155,6 +158,7 @@ public class OmokGame {
 		{
 		    end = true;
 		    gameGui.gameEnd();
+		    gameGui.dispose();	// +게임 종료 팝업 클릭 시 창도 꺼짐
 		}
 		if(!solo)
 		{
@@ -167,8 +171,8 @@ public class OmokGame {
 		int x = 0, y = 0;
 		try
 		{
-			x = mySocket.reciever.readInt();
-			y = mySocket.reciever.readInt();
+			x = mySocket.receiver.readInt();
+			y = mySocket.receiver.readInt();
 		}
 		catch(IOException ioex)
 		{
@@ -182,6 +186,7 @@ public class OmokGame {
 		{
 			end = true;
 			gameGui.gameEnd();
+		    gameGui.dispose();	// +게임 종료 팝업 클릭 시 창도 꺼짐
 		}
 	}
 	

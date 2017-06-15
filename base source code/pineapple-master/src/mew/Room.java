@@ -7,17 +7,17 @@ public class Room {
 	private int roomNum;
 	private String roomType;	// +방의 종류(일반/익명)
 	private String roomName;
-	private ArrayList<User> userArray; // 채팅방에 접속한 사람들
+	private ArrayList<User> roomUserArray; // 채팅방에 접속한 사람들
 	private User maker; // 방장, 방만든사람
 	private RoomUI rUI; // 방 UI
 
 	public Room() {
-		userArray = new ArrayList<User>();
+		roomUserArray = new ArrayList<User>();
 	}
 
-	public Room(String message) {
-		userArray = new ArrayList<User>();
-		setRoomName(message);
+	public Room(String roomName) {
+		roomUserArray = new ArrayList<User>();
+		this.roomName = roomName;
 	}
 
 	public String toProtocol() {
@@ -50,7 +50,11 @@ public class Room {
 	}
 	
 	public ArrayList<User> getUserArray() {
-		return userArray;
+		return roomUserArray;
+	}
+	
+	public void setUserArray(ArrayList<User> userArray) {
+		this.roomUserArray = userArray;
 	}
 
 	public User getMaker() {
