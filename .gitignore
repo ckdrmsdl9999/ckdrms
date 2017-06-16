@@ -1,0 +1,5 @@
+*.project
+*.classpath
+base source code/pineapple-master/src/mew/.gitignore
+base source code/.gitignore
+*.db
