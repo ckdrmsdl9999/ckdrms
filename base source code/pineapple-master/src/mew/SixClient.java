@@ -7,18 +7,18 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.StringTokenizer;
+import java.util.*;
 
 import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class SixClient implements Runnable {
-
 	private static int PORT = 5555; // 서버포트번호
 	private static String IP = ""; // 서버아이피주소
 	private Socket socket; // 소켓
 	private User user; // 사용자
-
+	private ArrayList<User> userArray;	// +유저 목록
+	
 	public LoginUI login;
 	public RestRoomUI restRoom;
 	private DataInputStream dis = null;
@@ -27,6 +27,7 @@ public class SixClient implements Runnable {
 
 	SixClient() {
 		login = new LoginUI(this);
+		userArray = new ArrayList<User>();
 		// 스레드 시작
 		Thread thread = new Thread(this);
 		thread.start();
@@ -190,9 +191,22 @@ public class SixClient implements Runnable {
 			msg = token.nextToken();
 			whisper(id, nick, name, msg);
 			break;
-		}
+			
+		case User.GET_USERS:
+			id = token.nextToken();
+			nick = token.nextToken();
+			name = token.nextToken();
+			getUser(id, nick, name);
+		}	
 	}
 
+	private void getUser(String id, String nick, String name)	// + 유저 객체를 생성하여 접속 중인 유저 목록에 추가
+	{
+		User user = new User(id, nick, name);
+		if(!userArray.contains(user.getId()))	// 이미 저장 중인 객체가 아니면
+			userArray.add(user);	// 배열에 추가
+	}
+	
 	private void logout() {
 		try {
 			restRoom.dispose();
@@ -329,7 +343,7 @@ public class SixClient implements Runnable {
 		user.setId(id);	// +아이디 업데이트
 		user.setNickName(nick);
 		user.setName(name);
-
+		
 		// 로그인창 닫고 대기실창 열기
 		login.dispose();
 		restRoom = new RestRoomUI(SixClient.this);
@@ -449,5 +463,21 @@ public class SixClient implements Runnable {
 	public void setReady(boolean ready) {
 		this.ready = ready;
 	}
+
+	/**
+	 * @return the userArray
+	 */
+	public ArrayList<User> getUserArray() {
+		return userArray;
+	}
+
+	/**
+	 * @param userArray the userArray to set
+	 */
+	public void setUserArray(ArrayList<User> userArray) {
+		this.userArray = userArray;
+	}
+	
+	
 
 }
