@@ -34,6 +34,8 @@ public class User {
 	public static final String ECHO01 = "MM"; // 대기실 채팅
 	public static final String ECHO02 = "ME"; // 채팅방 채팅
 	public static final String WHISPER = "MW"; // 귓속말
+	
+	public static final String GET_USERS = "GU";
 
 	User() {
 

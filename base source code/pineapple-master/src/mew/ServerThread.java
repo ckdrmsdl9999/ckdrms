@@ -186,6 +186,16 @@ public class ServerThread implements Runnable {
 				else
 					echoMsg(roomArray.get(i), user.toNickNameString() + "님이 입장하셨습니다.");
 				userList(rNum);
+				
+				try	// +유저 리스트 보내기
+				{
+					for(int j=0; j<roomArray.get(i).getUserArray().size(); j++)
+						thisUser.writeUTF(User.GET_USERS + "/" + roomArray.get(i).getUserArray().get(j).toProtocol());	// + 유저 리스트를 얻기 위해서 새로운 프로토콜 추가
+				}
+				catch(Exception e)
+				{
+					
+				}
 			}
 		}
 	}
@@ -195,8 +205,8 @@ public class ServerThread implements Runnable {
 		rm.setMaker(user); // 방장 설정
 		rm.setRoomNum(Integer.parseInt(rNum)); // 방번호 설정
 		rm.setRoomType(rType);
-		
 		rm.getUserArray().add(user); // 채팅방에 유저(본인) 추가
+		
 		roomArray.add(rm); // 룸리스트에 현재 채팅방 추가
 		user.getRoomArray().add(rm); // 사용자 객체에 접속한 채팅방을 저장
 		
@@ -213,6 +223,18 @@ public class ServerThread implements Runnable {
 		roomList();
 		userList(rNum, thisUser);
 		jta.append("성공 : " + userArray.toString() + "가 채팅방생성\n");
+		
+		try	// +유저 리스트 보내기
+		{
+			for (int i = 0; i < roomArray.size(); i++) {
+				for(int j=0; j<roomArray.get(i).getUserArray().size(); j++)
+					thisUser.writeUTF(User.GET_USERS + "/" + roomArray.get(i).getUserArray().get(j).toProtocol());	// + 유저 리스트를 얻기 위해서 새로운 프로토콜 추가
+			}
+		}
+		catch(Exception e)
+		{
+			
+		}
 	}
 
 	private void whisper(String id, String msg) {

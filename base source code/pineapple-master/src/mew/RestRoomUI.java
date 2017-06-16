@@ -16,7 +16,6 @@ public class RestRoomUI extends JFrame implements ActionListener {
 	public JButton makeRoomBtn, makeAnonymousRoomBtn, makeNormalRoomBtn, getInRoomBtn, whisperBtn, sendBtn;
 	public JTree userTree;
 	public JList roomList;
-	public Room[] roomArray;	//+방 객체들의 목록
 	public JTextField chatField;
 	public JTextArea restRoomArea;
 	public JLabel lb_id, lb_nick, lb_name;
@@ -86,7 +85,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 				// 채팅방 목록 중 하나를 선택한 경우,
 				// 선택한 방의 방번호를 전송
 				String temp = (String) roomList.getSelectedValue();
-
+				
 				try
 				{
 					client.getUser().getDos().writeUTF(User.UPDATE_SELECTEDROOM_USERLIST + "/"+ temp.substring(0, 3));
@@ -404,6 +403,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		Room newRoom = new Room(roomName); // 방 객체 생성
 		newRoom.setRoomNum(lastRoomNum);
 		newRoom.setRoomType("일반");
+		newRoom.getUserArray().add(client.getUser());
 		newRoom.setrUI(new RoomUI(client, newRoom)); // UI
 
 		// 클라이언트가 접속한 방 목록에 추가
@@ -423,6 +423,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		Room newRoom = new Room(roomName); // 방 객체 생성
 		newRoom.setRoomNum(lastRoomNum);
 		newRoom.setRoomType("익명");
+		newRoom.getUserArray().add(client.getUser());
 		newRoom.setrUI(new RoomUI(client, newRoom)); // UI
 		
 		// 클라이언트가 접속한 방 목록에 추가
