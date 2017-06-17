@@ -1,4 +1,5 @@
-package mew;
+package Chat;
+
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;

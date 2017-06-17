@@ -1,4 +1,4 @@
-package mew;
+package Chat;
 
 import java.awt.*;
 import java.awt.event.*;
