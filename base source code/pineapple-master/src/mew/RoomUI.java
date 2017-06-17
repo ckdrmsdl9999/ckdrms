@@ -2,30 +2,39 @@ package mew;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.*;
 import java.io.IOException;
 import java.util.Random;
-
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
 public class RoomUI extends JFrame {
 	private SixClient client;
 	private Room room;
+	//------------------------------------------------------------------//
+	// 변경된 설정값을 전달할 때 필요한 참조 변수 tab
+	private textAndBackground tab;
+	//------------------------------------------------------------------//
 
 	public JTextArea chatArea;
 	public JTextField chatField;
 	public JList uList;
 	public DefaultListModel model;
-
-	public RoomUI(SixClient client, Room room) {
+	
+	//------------------------------------------------------------------//
+	// RoomUI의 파라미터로 textAndBackground tab 추가
+	public RoomUI(SixClient client, Room room, textAndBackground tab) {
 		this.client = client;
 		this.room = room;
+		this.tab = tab;	// 참조 변수에 받아온 값 전달
 		setTitle(room.getRoomName() + "(" + room.getRoomType() + " 채팅방)");	// +방 종류에 따라 이름 수정
-		initialize(room);
+		initialize();
 	}
+	//------------------------------------------------------------------//
 
-	private void initialize(Room room) 
+	private void initialize() 
 	{
 		setBounds(100, 100, 502, 481);
 		getContentPane().setLayout(null);
@@ -40,7 +49,36 @@ public class RoomUI extends JFrame {
 		panel.add(scrollPane, BorderLayout.CENTER);
 
  		chatArea = new JTextArea();
-		chatArea.setBackground(new Color(224, 255, 255));
+ 		//------------------------------------------------------------------//
+ 				// 채팅창에 설정한 값을 전달
+ 				Font font = new Font("", Font.BOLD, 12);
+ 				chatArea.setBackground(new Color(224, 255, 255));
+ 				if(tab.getBackColor() != null)
+ 				{
+ 					chatArea.setBackground(tab.getBackColor());
+ 				}
+ 				if(tab.getSize() != 0)
+ 				{
+ 					font = new Font("", Font.PLAIN, tab.getSize());
+
+ 				}
+ 				if(tab.getFont() == 0 || tab.getFont() == 1 || tab.getFont() == 2)
+ 				{
+ 					if(tab.getFont() == 1)
+ 					{
+ 						font = new Font("", Font.BOLD, tab.getSize());
+ 					}
+ 					else if(tab.getFont() == 2)
+ 					{
+ 						font = new Font("", Font.ITALIC, tab.getSize());
+ 					}
+ 					else if(tab.getFont() == 0)
+ 					{
+ 						font = new Font("", Font.PLAIN, tab.getSize());
+ 					}
+ 				}
+ 				chatArea.setFont(font);
+ 				//------------------------------------------------------------------//
 		chatArea.setEditable(false);
 		scrollPane.setViewportView(chatArea);
 		chatArea.append("◆채팅방이 개설되었습니다.◆\r\n");
@@ -91,8 +129,7 @@ public class RoomUI extends JFrame {
 	    pm.add(friendAddItem);
 	    pm.add(omokItem);
 	    
-		// +마우스 우클릭 시 팝업 메뉴 뜨기
-	    uList.addMouseListener(new MouseAdapter() {
+	    uList.addMouseListener(new MouseAdapter() {	// +마우스 우클릭 시 팝업 메뉴 뜨기
             public void mouseClicked(MouseEvent e)
             {
         		JList c = (JList)e.getComponent();
@@ -106,6 +143,32 @@ public class RoomUI extends JFrame {
         			if(y <= cal)
         			{
         				pm.show(uList, x, y);
+        				infoItem.addActionListener(new ActionListener(){	// 친구 정보 아이템 클릭 시
+        			    	public void actionPerformed(ActionEvent e1)
+        			    	{
+        			    		System.out.println(room.getUserArray());
+        			    		int selectedIndex = uList.getSelectedIndex();	// 리스트에서 선택한 개체의 인덱스
+        			    		if(uList.getSelectedValue().toString().equals("["+room.getUserArray().get(selectedIndex).getNickName()+"]"))
+        			    		{
+        			    			FriendInfo fi = new FriendInfo(room.getUserArray().get(selectedIndex));
+        			    			fi.setVisible(true);
+        			    		}
+        			    	}
+        			    });
+        			    
+        			    friendAddItem.addActionListener(new ActionListener(){
+        			    	public void actionPerformed(ActionEvent e2)
+        			    	{
+        			    		OmokGame omok = new OmokGame(19);	// 19줄 판으로 오목 게임 실행
+        			    	}
+        			    });
+        			    
+        			    omokItem.addActionListener(new ActionListener(){
+        			    	public void actionPerformed(ActionEvent e3)
+        			    	{
+        			    		OmokGame omok = new OmokGame(19);	// 19줄 판으로 오목 게임 실행
+        			    	}
+        			    });
         			}
         		}
             }

@@ -8,17 +8,16 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
-
 import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
-
 public class SixClient implements Runnable {
+
 	private static int PORT = 5555; // 서버포트번호
 	private static String IP = ""; // 서버아이피주소
 	private Socket socket; // 소켓
 	private User user; // 사용자
 	private ArrayList<User> userArray;	// +유저 목록
-	
+
 	public LoginUI login;
 	public RestRoomUI restRoom;
 	private DataInputStream dis = null;
@@ -27,7 +26,6 @@ public class SixClient implements Runnable {
 
 	SixClient() {
 		login = new LoginUI(this);
-		userArray = new ArrayList<User>();
 		// 스레드 시작
 		Thread thread = new Thread(this);
 		thread.start();
@@ -121,6 +119,13 @@ public class SixClient implements Runnable {
 		System.out.println("받은 데이터 : " + data);
 		
 		switch (protocol) {
+		case User.FRIEND:
+			String friendaddarray="";//친구추가할 friend 임시저장할 스트링
+			friendaddarray=token.nextToken();
+			friendList(friendaddarray);
+			break;
+		
+		
 		case User.LOGIN: // 로그인
 			// 사용자가 입력한(전송한) 아이디와 패스워드
 			result = token.nextToken();
@@ -132,7 +137,11 @@ public class SixClient implements Runnable {
 				msg = token.nextToken();
 				errorMsg(msg);
 			}
+			while(token.hasMoreTokens()){//ServerThread에서 읽어들인 친구목록 friendarray에삽입
+					user.getfriendArray().add(token.nextToken());
+				}
 			break;
+			
 		case User.LOGOUT:
 			logout();
 			break;
@@ -309,6 +318,23 @@ public class SixClient implements Runnable {
 			restRoom.level_2_2.add(new DefaultMutableTreeNode(tempUser.toString()));
 		}
 		restRoom.userTree.updateUI();
+		
+		
+		if (restRoom == null) {//////////처음 로그인시친구목록트리 출력
+			return;
+		}
+	
+			// 대기실 사용자노드에 추가
+		if (!restRoom.level1.isLeaf()) {
+			// 리프노드가 아니고, 차일드가 있다면 모두 지움
+			restRoom.level1.removeAllChildren();
+		}
+		for(int ko=0;ko<user.getfriendArray().size();ko++)
+		restRoom.level1.add(new DefaultMutableTreeNode(user.getfriendArray().get(ko)));//로그인시userlist와 친구목록함께출력
+		restRoom.friendTree.updateUI();
+		
+		
+		
 	}
 
 	// 서버로부터 방리스트를 업데이트하라는 명령을 받음
@@ -354,7 +380,7 @@ public class SixClient implements Runnable {
 		user.setId(id);	// +아이디 업데이트
 		user.setNickName(nick);
 		user.setName(name);
-		
+
 		// 로그인창 닫고 대기실창 열기
 		login.dispose();
 		restRoom = new RestRoomUI(SixClient.this);
@@ -402,6 +428,31 @@ public class SixClient implements Runnable {
 		}
 	}
 
+	
+	private void friendList(String friendaddarray) {
+		// 서버로부터 유저리스트(대기실)를 업데이트하라는 명령을 받음
+		user.getfriendArray().add(friendaddarray);
+		if (restRoom == null) {
+			return;
+		}
+	
+			// 대기실 사용자노드에 추가
+		if (!restRoom.level1.isLeaf()) {
+			// 리프노드가 아니고, 차일드가 있다면 모두 지움
+			restRoom.level1.removeAllChildren();
+		}
+		
+		for(int ko=0;ko<user.getfriendArray().size();ko++)
+			restRoom.level1.add(new DefaultMutableTreeNode(user.getfriendArray().get(ko)));//getID는 어디서썻지?
+		
+		int ko=user.getfriendArray().size()-1;
+		System.out.println(user.getfriendArray().get(ko)+"friendarray내용확인");//friendArray트리 갱신
+			restRoom.friendTree.updateUI();
+	
+	}
+	
+	
+	
 	// getter, setter
 	public static int getPORT() {
 		return PORT;
@@ -488,7 +539,4 @@ public class SixClient implements Runnable {
 	public void setUserArray(ArrayList<User> userArray) {
 		this.userArray = userArray;
 	}
-	
-	
-
 }

@@ -18,7 +18,10 @@ public class ServerThread implements Runnable {
 	private User user; // 현재 스레드와 연결된(소켓이 생성된) 사용자
 	private JTextArea jta;
 	private boolean onLine = true;
-
+	//------------------------------------------------------------------//
+	// id을 전역변수 선언
+	private String id;
+	//------------------------------------------------------------------//
 	private DataOutputStream thisUser;
 	
 	ServerThread(JTextArea jta, User person, ArrayList<User> userArray, ArrayList<Room> roomArray) {
@@ -47,20 +50,41 @@ public class ServerThread implements Runnable {
 					e1.printStackTrace();
 				} finally {
 					jta.append("에러 : 서버스레드-읽기 실패\n");
+					userArrayDelete();	// 서버에서 떠난 클라이언트를 제외시키는 메소드
 					break;
 				}
 			}
 		}
+	}
+	
+	public void userArrayDelete(){
+		//------------------------------------------------------------------//
+		//회원탈퇴 후 userArray에서 정보를 삭제하기 위한 부분
+		for (int i = 0; i < userArray.size(); i++) {
+			if (id.equals(userArray.get(i).getId())) {
+				userArray.remove(i);
+			}
+		}
+		//------------------------------------------------------------------//
 	}
 
 	// 데이터를 구분
 	public synchronized void dataParsing(String data) {
 		StringTokenizer token = new StringTokenizer(data, "/"); // 토큰 생성
 		String protocol = token.nextToken(); // 토큰으로 분리된 스트링을 숫자로
-		String id, pw, rType, rNum, nick, name, rName, msg;	// +이름 추가
+		String pw, rType, rNum, nick, name, rName, msg;	// +이름 추가
 		System.out.println("서버가 받은 데이터 : " + data);
 
 		switch (protocol) {
+		case User.FRIEND: // 로그인
+			// 사용자가 입력한(전송한) 아이디와 패스워드
+			String id2=token.nextToken();
+			String friend2=token.nextToken();
+			//jta.append("확인zzz:"+id2+"/"+friend2+"\n");
+		add(id2,friend2,thisUser);
+			
+			break;
+		
 		case User.LOGIN: // 로그인
 			// 사용자가 입력한(전송한) 아이디와 패스워드
 			id = token.nextToken();
@@ -222,8 +246,8 @@ public class ServerThread implements Runnable {
 		rm.setMaker(user); // 방장 설정
 		rm.setRoomNum(Integer.parseInt(rNum)); // 방번호 설정
 		rm.setRoomType(rType);
-		rm.getUserArray().add(user); // 채팅방에 유저(본인) 추가
 		
+		rm.getUserArray().add(user); // 채팅방에 유저(본인) 추가
 		roomArray.add(rm); // 룸리스트에 현재 채팅방 추가
 		user.getRoomArray().add(rm); // 사용자 객체에 접속한 채팅방을 저장
 		
@@ -379,25 +403,28 @@ public class ServerThread implements Runnable {
 		FileReader reader = null;
 		FileWriter writer = null;	// +FileWriter 추가
 		int inputValue = 0;
-		StringBuffer str = new StringBuffer();
+		String str="";
+		String fr="";
+		
+		
 		try {
 			// 파일 열기
 			reader = new FileReader("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt");
 			while ((inputValue = reader.read()) != -1) {
 				// 파일 읽음
-				str.append((char) inputValue);
+				str+=((char) inputValue);
 			}
 			jta.append("성공 : 파일 읽기 : C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt\n");
 			writer = new FileWriter("C:\\Users\\Park\\workspace\\MEW\\src\\members\\recent.txt");	// +최근 로그인한 id파일
 			writer.write(id);	// +id를 파일에 쓰기
 			reader.close();
 			writer.close();	// +파일닫기
-			StringTokenizer token = new StringTokenizer(str.toString(), "/"); // 토큰
+			String token[]=str.split("/"); // 토큰
 			// 생성
 
 			try {
-				if (id.equals(token.nextToken())) {
-					if (pw.equals(token.nextToken())) {
+				if (id.equals(token[0])) {
+					if (pw.equals(token[1])) {
 						for (int i = 0; i < userArray.size(); i++) {
 							if (id.equals(userArray.get(i).getId())) {
 								try {
@@ -414,11 +441,18 @@ public class ServerThread implements Runnable {
 						// 로그인 OK
 						user.setId(id);
 						user.setPw(pw);
-						user.setNickName(token.nextToken());
-						user.setName(token.nextToken());	// +이름 set
-						thisUser.writeUTF(User.LOGIN + "/OK/"+ user.getNickName() + "/" + user.getName());
-						this.user.setOnline(true);
+						user.setNickName(token[2]);
+						user.setName(token[3]);	// +이름 set
 
+						int hex=0;
+						for(hex=4;hex<token.length;hex++)
+						{if(hex== token.length-1)
+							fr+=token[hex];
+							else
+								fr+=token[hex]+"/";
+						}
+						thisUser.writeUTF(User.LOGIN + "/OK/"+ user.getNickName() + "/" + user.getName()+"/"+fr);
+						this.user.setOnline(true);
 						// 대기실에 에코
 						echoMsg(User.ECHO01 + "/" + user.toString()+ "님이 입장하셨습니다.");	// +이름으로 수정
 						jta.append(user.toString() + " : 님이 입장하셨습니다.\n");	// +이름으로 수정
@@ -604,7 +638,64 @@ public class ServerThread implements Runnable {
 			jta.append("에러 : 목록(방) 전송 실패\n");
 		}
 	}
+	////////////////////////////////////////////////////////////
+public void add(String id,String friend,DataOutputStream target) {//친구목록추가
+		
 
+		File file = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt");
+		FileReader reader2;
+		int inputValue = 0;
+		String str="";
+		String temp="";
+		String userid="";
+		String userpw="";
+		String usernick="";
+		String username="";
+		jta.append("확인하려고함:"+id+"과"+friend+"\n");
+		try {
+			// 파일 열기
+			reader2 = new FileReader(file);
+			while ((inputValue = reader2.read()) != -1) {
+				// 파일 읽음
+				str+=((char) inputValue);
+			}
+			jta.append("성공 : 파일 읽기 : C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt\n"+str+"<--str\n");
+			reader2.close();
+			String token[]=str.split("/");
+			//token[token.length]=friend;//추가한부분<-----------여기서 오류났었음
+			for(int zi=4;zi<token.length;zi++)
+			{	if(zi==token.length-1)
+				temp+=token[zi];
+			else
+				temp+=token[zi]+"/";
+			}
+	
+			//	jta.append("이것은 파일쓰기확인이다 :"+token[0]+"/"+token[1]+"/"+token[2]+"/"+temp+"\n");
+				target.writeUTF(User.FRIEND+"/"+friend);
+		userid=token[0];
+		userpw=token[1];
+		usernick=token[2];
+		username=token[3];
+		}
+			catch (IOException e) {
+				e.printStackTrace();
+				jta.append("오류나서 실패~\n");
+			}
+			//StringTokenizer token = new StringTokenizer(str.toString(), "/"); // 토큰
+			File file2 = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id+ ".txt");
+			FileWriter f;
+			try {
+				f = new FileWriter(file2);
+				// 파일에 회원정보쓰기 (아이디+패스워드+닉네임)
+				f.write(userid+"/"+userpw+"/"+usernick+"/"+username+"/"+temp+"/"+friend);
+				f.close();
+			//	thisUser.writeUTF(User.MEMBERSHIP + "/OK");
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			
+	}
+///////////////////////////////////////////////////////
 	// 채팅 방리스트
 	public void roomList() {
 		String rl = "";
