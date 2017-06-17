@@ -1,4 +1,4 @@
-package Chat;
+package mew;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;

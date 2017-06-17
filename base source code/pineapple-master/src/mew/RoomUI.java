@@ -1,10 +1,11 @@
-package Chat;
+package mew;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.*;
 import java.io.IOException;
+import java.util.Random;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -142,35 +143,50 @@ public class RoomUI extends JFrame {
         			if(y <= cal)
         			{
         				pm.show(uList, x, y);
-        				infoItem.addActionListener(new ActionListener(){	// 친구 정보 아이템 클릭 시
-        			    	public void actionPerformed(ActionEvent e1)
-        			    	{
-        			    		System.out.println(room.getUserArray());
-        			    		int selectedIndex = uList.getSelectedIndex();	// 리스트에서 선택한 개체의 인덱스
-        			    		if(uList.getSelectedValue().toString().equals("["+room.getUserArray().get(selectedIndex).getNickName()+"]"))
-        			    		{
-        			    			FriendInfo fi = new FriendInfo(room.getUserArray().get(selectedIndex));
-        			    			fi.setVisible(true);
-        			    		}
-        			    	}
-        			    });
-        			    
-        			    friendAddItem.addActionListener(new ActionListener(){
-        			    	public void actionPerformed(ActionEvent e2)
-        			    	{
-        			    		OmokGame omok = new OmokGame(19);	// 19줄 판으로 오목 게임 실행
-        			    	}
-        			    });
-        			    
-        			    omokItem.addActionListener(new ActionListener(){
-        			    	public void actionPerformed(ActionEvent e3)
-        			    	{
-        			    		OmokGame omok = new OmokGame(19);	// 19줄 판으로 오목 게임 실행
-        			    	}
-        			    });
         			}
         		}
             }
+	    });
+	    
+	    infoItem.addActionListener(new ActionListener(){	// 친구 정보 아이템 클릭 시
+	    	public void actionPerformed(ActionEvent e1)
+	    	{
+	    		for(int i=0; i<client.getUserArray().size(); i++)
+	    		{
+	    			if(client.getUserArray().get(i).toString().equals(uList.getSelectedValue().toString()))
+	    			{	
+	    				FriendInfo fi = new FriendInfo(client.getUserArray().get(i));	// 유저 목록을 얻어와서 목록 안에 클릭한 개체가 들어있을 경우 친구 정보 출력
+	    				fi.setVisible(true);
+	    				break;
+	    			}
+	    		}
+	    	}
+	    });
+	    
+	    friendAddItem.addActionListener(new ActionListener(){
+	    	public void actionPerformed(ActionEvent e2)
+	    	{
+	    		try
+	    		{
+	    			int lineNum = 19;
+	    			int portNum = (int)(Math.random()*4443+5556);	// +이미 쓰고 있는 5555번 포트 제외하고 그 뒤부터 9999번  포트까지 중 랜덤으로 부여
+	    			
+	    			client.getDos().writeUTF(User.OMOK_INVITE + "/" + client.getUser().getId() + "/" + Integer.toString(lineNum) + "/" + Integer.toString(portNum));
+	    			OmokGame omok = new OmokGame(lineNum, false, portNum);
+
+	    		}
+	    		catch(Exception e)
+	    		{
+	    			e.getMessage();
+	    		}
+	    	}
+	    });	 
+	    
+	    omokItem.addActionListener(new ActionListener(){
+	    	public void actionPerformed(ActionEvent e3)
+	    	{
+	    		OmokGame omok = new OmokGame(19);	// 19줄 판으로 오목 게임 실행
+	    	}
 	    });
 	    
 		scrollPane_1.setViewportView(uList);

@@ -1,4 +1,4 @@
-package Chat;
+package mew;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -223,6 +223,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 			@Override
 			public void mouseClicked(MouseEvent arg0) 
 			{
+				/*
 				StringTokenizer token = new StringTokenizer(currentSelectedTreeNode, "("); // 토큰 생성
 				String temp = token.nextToken(); // 토큰으로 분리된 스트링
 				temp = token.nextToken();
@@ -230,6 +231,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 				// 닉네임 제외하고 아이디만 따옴
 				chatField.setText("/" + temp.substring(0, temp.length() - 1)+ " ");
 				chatField.requestFocus();
+				*/
 			}
 		});
 		panel_1.add(whisperBtn);

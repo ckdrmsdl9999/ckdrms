@@ -1,6 +1,7 @@
-package Chat;
+package mew;
 
 import java.net.Socket;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,7 +18,16 @@ public class OmokSocket {
 	private String serverIP;
 
 	public OmokSocket() {
-
+		InetAddress addr = null;
+		try
+		{
+			addr = InetAddress.getLocalHost();	// +IP를 직접 받아올 수 있도록 바꿈
+			serverIP = addr.getHostAddress().toString();
+		}
+		catch(IOException e)
+		{
+			e.getMessage();
+		}
 	}
 
 	public void beServer(int portNum){
@@ -32,8 +42,7 @@ public class OmokSocket {
 		}
 	}
 
-	public void beClient(String serverIP, int portNum){
-		this.serverIP = serverIP;
+	public void beClient(int portNum){
 		try{
 			mySocket = new Socket(serverIP, portNum);
 			sender = new DataOutputStream(mySocket.getOutputStream());

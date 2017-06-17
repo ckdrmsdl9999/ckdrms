@@ -1,4 +1,4 @@
-package Chat;
+package mew;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -160,9 +160,37 @@ public class ServerThread implements Runnable {
 			msg = token.nextToken();
 			whisper(id, msg);
 			break;
+		case User.OMOK_INVITE:
+			id = token.nextToken();
+			String lineNum = token.nextToken();
+			String portNum = token.nextToken();
+			omokInvite(id, lineNum, portNum);
+			break;
 		}
 	}
 
+	public void omokInvite(String id, String lineNum, String portNum)
+	{	
+		for(int i=0; i<this.userArray.size(); i++)	// contains로 바꿔도 되나???
+		{
+			if(this.userArray.get(i).getId().equals(id))
+			{
+				User invitedUser = this.userArray.get(i);
+				try
+				{
+					invitedUser.getDos().writeUTF(User.OMOK_INVITE + "/" + user.getId() + "/" + lineNum + "/" + portNum);
+				}
+				catch(Exception e)
+				{
+					
+				}
+				break;
+			}
+		}
+				
+		
+	}
+	
 	public void alarm() {
 
 	}
@@ -290,7 +318,7 @@ public class ServerThread implements Runnable {
 
 	// 대기실닉네임 변경
 	private void changeNick(String nick, String name) {
-		File file = new File("D:\\" + user.getId() + ".txt");
+		File file = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + user.getId() + ".txt");
 		FileWriter f;
 		try {
 			f = new FileWriter(file);
@@ -327,11 +355,7 @@ public class ServerThread implements Runnable {
 			if (id.equals(userArray.get(i).getId())) {
 				try {
 					// 초대한 사람의 아이디와 방번호를 전송
-					userArray
-							.get(i)
-							.getDos()
-							.writeUTF(
-									User.INVITE + "/" + user.getId() + "/"+ rNum);
+					userArray.get(i).getDos().writeUTF(User.INVITE + "/" + user.getId() + "/"+ rNum);
 				} catch (IOException e) {
 					e.printStackTrace();
 					jta.append("에러 : 초대실패-" + userArray.toString() + "\n");
@@ -349,7 +373,7 @@ public class ServerThread implements Runnable {
 			
 		
 		try {
-			File file = new File("D:\\" + id + ".txt");
+			File file = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt");
 			if (!file.isFile()) {
 				FileWriter f = new FileWriter(file);
 
@@ -385,13 +409,13 @@ public class ServerThread implements Runnable {
 		
 		try {
 			// 파일 열기
-			reader = new FileReader("D:\\" + id + ".txt");
+			reader = new FileReader("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt");
 			while ((inputValue = reader.read()) != -1) {
 				// 파일 읽음
 				str+=((char) inputValue);
 			}
-			jta.append("성공 : 파일 읽기 : D:\\" + id + ".txt\n");
-			writer = new FileWriter("D:\\recent.txt");	// +최근 로그인한 id파일
+			jta.append("성공 : 파일 읽기 : C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt\n");
+			writer = new FileWriter("C:\\Users\\Park\\workspace\\MEW\\src\\members\\recent.txt");	// +최근 로그인한 id파일
 			writer.write(id);	// +id를 파일에 쓰기
 			reader.close();
 			writer.close();	// +파일닫기
@@ -459,7 +483,6 @@ public class ServerThread implements Runnable {
 			jta.append("실패 : 파일 읽기\n");
 			return;
 		}
-
 	}
 
 	private void logout() {
@@ -619,7 +642,7 @@ public class ServerThread implements Runnable {
 public void add(String id,String friend,DataOutputStream target) {//친구목록추가
 		
 
-		File file = new File("D:\\" + id + ".txt");
+		File file = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt");
 		FileReader reader2;
 		int inputValue = 0;
 		String str="";
@@ -636,7 +659,7 @@ public void add(String id,String friend,DataOutputStream target) {//친구목록추가
 				// 파일 읽음
 				str+=((char) inputValue);
 			}
-			jta.append("성공 : 파일 읽기 : D:\\" + id + ".txt\n"+str+"<--str\n");
+			jta.append("성공 : 파일 읽기 : C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt\n"+str+"<--str\n");
 			reader2.close();
 			String token[]=str.split("/");
 			//token[token.length]=friend;//추가한부분<-----------여기서 오류났었음
@@ -659,7 +682,7 @@ public void add(String id,String friend,DataOutputStream target) {//친구목록추가
 				jta.append("오류나서 실패~\n");
 			}
 			//StringTokenizer token = new StringTokenizer(str.toString(), "/"); // 토큰
-			File file2 = new File("D:\\" + id+ ".txt");
+			File file2 = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id+ ".txt");
 			FileWriter f;
 			try {
 				f = new FileWriter(file2);
