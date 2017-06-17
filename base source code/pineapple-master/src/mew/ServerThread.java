@@ -1,4 +1,3 @@
-
 package mew;
 
 import java.io.DataInputStream;
@@ -137,9 +136,37 @@ public class ServerThread implements Runnable {
 			msg = token.nextToken();
 			whisper(id, msg);
 			break;
+		case User.OMOK_INVITE:
+			id = token.nextToken();
+			String lineNum = token.nextToken();
+			String portNum = token.nextToken();
+			omokInvite(id, lineNum, portNum);
+			break;
 		}
 	}
 
+	public void omokInvite(String id, String lineNum, String portNum)
+	{	
+		for(int i=0; i<this.userArray.size(); i++)	// contains로 바꿔도 되나???
+		{
+			if(this.userArray.get(i).getId().equals(id))
+			{
+				User invitedUser = this.userArray.get(i);
+				try
+				{
+					invitedUser.getDos().writeUTF(User.OMOK_INVITE + "/" + user.getId() + "/" + lineNum + "/" + portNum);
+				}
+				catch(Exception e)
+				{
+					
+				}
+				break;
+			}
+		}
+				
+		
+	}
+	
 	public void alarm() {
 
 	}
@@ -186,16 +213,6 @@ public class ServerThread implements Runnable {
 				else
 					echoMsg(roomArray.get(i), user.toNickNameString() + "님이 입장하셨습니다.");
 				userList(rNum);
-				
-				try	// +유저 리스트 보내기
-				{
-					for(int j=0; j<roomArray.get(i).getUserArray().size(); j++)
-						thisUser.writeUTF(User.GET_USERS + "/" + roomArray.get(i).getUserArray().get(j).toProtocol());	// + 유저 리스트를 얻기 위해서 새로운 프로토콜 추가
-				}
-				catch(Exception e)
-				{
-					
-				}
 			}
 		}
 	}
@@ -223,18 +240,6 @@ public class ServerThread implements Runnable {
 		roomList();
 		userList(rNum, thisUser);
 		jta.append("성공 : " + userArray.toString() + "가 채팅방생성\n");
-		
-		try	// +유저 리스트 보내기
-		{
-			for (int i = 0; i < roomArray.size(); i++) {
-				for(int j=0; j<roomArray.get(i).getUserArray().size(); j++)
-					thisUser.writeUTF(User.GET_USERS + "/" + roomArray.get(i).getUserArray().get(j).toProtocol());	// + 유저 리스트를 얻기 위해서 새로운 프로토콜 추가
-			}
-		}
-		catch(Exception e)
-		{
-			
-		}
 	}
 
 	private void whisper(String id, String msg) {
@@ -326,11 +331,7 @@ public class ServerThread implements Runnable {
 			if (id.equals(userArray.get(i).getId())) {
 				try {
 					// 초대한 사람의 아이디와 방번호를 전송
-					userArray
-							.get(i)
-							.getDos()
-							.writeUTF(
-									User.INVITE + "/" + user.getId() + "/"+ rNum);
+					userArray.get(i).getDos().writeUTF(User.INVITE + "/" + user.getId() + "/"+ rNum);
 				} catch (IOException e) {
 					e.printStackTrace();
 					jta.append("에러 : 초대실패-" + userArray.toString() + "\n");
@@ -448,7 +449,6 @@ public class ServerThread implements Runnable {
 			jta.append("실패 : 파일 읽기\n");
 			return;
 		}
-
 	}
 
 	private void logout() {

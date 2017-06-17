@@ -2,7 +2,13 @@ package mew;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import javax.swing.*;
 
 public class User {
 	private String IP;
@@ -34,8 +40,8 @@ public class User {
 	public static final String ECHO01 = "MM"; // 대기실 채팅
 	public static final String ECHO02 = "ME"; // 채팅방 채팅
 	public static final String WHISPER = "MW"; // 귓속말
-	
-	public static final String GET_USERS = "GU";
+
+	public static final String OMOK_INVITE = "OI";
 
 	User() {
 
@@ -146,5 +152,70 @@ public class User {
 
 	public void setRooms(ArrayList<Room> rooms) {
 		this.user_rooms = rooms;
+	}
+	
+	public void sendObject(int lineNum, int portNum)
+	{
+		// ObjectOutputStream 을 이용한 객체 파일 저장
+		FileOutputStream fos = null;
+		ObjectOutputStream oos = null;
+		
+		try{
+			
+			// object.dat 파일의 객체 아웃풋스트림을 생성
+			fos = new FileOutputStream("C:\\Users\\Park\\Desktop\\Chatting\\base source code\\pineapple-master\\object.dat");
+			oos = new ObjectOutputStream(fos);
+			
+			// 해당 파일에 3개의 객체를 순차적으로 쓴다
+			
+			oos.writeObject(lineNum);
+			oos.writeObject(portNum);
+			
+			// object.dat 파일에 2개의 객체 쓰기 완료
+			System.out.println("객체를 저장했습니다.");
+		
+		}catch(Exception e){
+			
+			e.printStackTrace();
+		
+		}finally{
+			
+			// 스트림을 닫아준다.
+			if(fos != null) try{fos.close();}catch(IOException e){}
+			if(oos != null) try{oos.close();}catch(IOException e){}	
+		}
+	}
+	
+	public void receiveObject()
+	{
+		String[] playMode = {"Y", "N"};
+		String input = (String) JOptionPane.showInputDialog(null, "Y", "N", JOptionPane.QUESTION_MESSAGE, null, playMode, playMode[0]);
+		if(input.equals("N"))
+		{
+			System.out.println("No 를 선택");
+			return;
+		}
+
+		// 파일로 부터 객체 데이터 읽어온다.
+		FileInputStream fis = null;
+		ObjectInputStream ois = null;
+		
+		try{
+			
+			// object.dat 파일로 부터 객체를 읽어오는 스트림을 생성한다.
+			fis = new FileInputStream("C:\\Users\\Park\\Desktop\\Chatting\\base source code\\pineapple-master\\object.dat");
+			ois = new ObjectInputStream(fis);
+			
+			// ObjectInputStream으로 부터 객체 하나씩 읽어온다.
+			int lineNum = (int)(ois.readObject());
+			int portNum = (int)(ois.readObject());
+
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			// 스트림을 닫아준다.
+			if(fis != null) try{fis.close();}catch(IOException e){}
+			if(ois != null) try{ois.close();}catch(IOException e){}
+		}
 	}
 }

@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 
+import javax.swing.JPasswordField;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -23,7 +24,7 @@ public class LoginUI extends JFrame {
 	FileReader reader;
 	String addr;
 	public JTextField idText;
-	public JTextField pwText;
+	public JPasswordField pwText;
 	public JButton loginBtn, signUpBtn;
 	public MemberUI mem;
 	public JButton ipBtn;
@@ -91,7 +92,7 @@ public class LoginUI extends JFrame {
 		panel.add(idText);
 		idText.setColumns(10);
 
-		pwText = new JTextField();
+		pwText = new JPasswordField();
 		pwText.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {

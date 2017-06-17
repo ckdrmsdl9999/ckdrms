@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.*;
 import java.io.IOException;
+import java.util.Random;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
@@ -118,6 +120,7 @@ public class RoomUI extends JFrame {
 	    			{	
 	    				FriendInfo fi = new FriendInfo(client.getUserArray().get(i));	// 유저 목록을 얻어와서 목록 안에 클릭한 개체가 들어있을 경우 친구 정보 출력
 	    				fi.setVisible(true);
+	    				break;
 	    			}
 	    		}
 	    	}
@@ -126,9 +129,21 @@ public class RoomUI extends JFrame {
 	    friendAddItem.addActionListener(new ActionListener(){
 	    	public void actionPerformed(ActionEvent e2)
 	    	{
-	    		OmokGame omok = new OmokGame(19);	// 19줄 판으로 오목 게임 실행
+	    		try
+	    		{
+	    			int lineNum = 19;
+	    			int portNum = (int)(Math.random()*4443+5556);	// +이미 쓰고 있는 5555번 포트 제외하고 그 뒤부터 9999번  포트까지 중 랜덤으로 부여
+	    			
+	    			client.getDos().writeUTF(User.OMOK_INVITE + "/" + client.getUser().getId() + "/" + Integer.toString(lineNum) + "/" + Integer.toString(portNum));
+	    			OmokGame omok = new OmokGame(lineNum, false, portNum);
+
+	    		}
+	    		catch(Exception e)
+	    		{
+	    			e.getMessage();
+	    		}
 	    	}
-	    });
+	    });	 
 	    
 	    omokItem.addActionListener(new ActionListener(){
 	    	public void actionPerformed(ActionEvent e3)

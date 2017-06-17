@@ -7,7 +7,7 @@ import javax.swing.JOptionPane;
 import java.net.InetAddress;
 import java.util.*;
 
-public class OmokGame {
+public class OmokGame{
 	protected OmokSocket mySocket;
 	OmokGui gameGui;
 	protected boolean end;
@@ -15,7 +15,7 @@ public class OmokGame {
 	protected int ver,hor;
 	protected int turn;
 	public boolean myTurn;
-	public boolean solo;
+	public boolean solo=false;
 	public boolean start;
 	private static final String[] playMode = {"혼자 하기", "둘이서 하기"};
 	private static final String[] joinMode = {"게임 생성(선공)", "게임 참여(후공)"};
@@ -44,19 +44,20 @@ public class OmokGame {
 		start = true;
 	}
 
-	public OmokGame(int lineNum, boolean host, int portNum, String ipNum)
+	public OmokGame(int lineNum, boolean host, int portNum)
 	{//for future multimode
 		start = false;
 		dataInit(lineNum);
-		socketInit(host, portNum, ipNum);
+		socketInit(host, portNum);
 		gameGui = new OmokGui(lineNum, this);
 		start = true;
-		if(!solo && !myTurn)	
+		if(!solo && !myTurn)
 		{
 			otherPut();
+			System.out.println("영심");
 		}
 	}
-
+	
 	private void baseSettingsWithPane()
 	{
 		String input = (String) JOptionPane.showInputDialog(null, "혼자 하기 / 둘이서 하기", "플레이 모드 선택", JOptionPane.QUESTION_MESSAGE, null, playMode, playMode[0]);
@@ -72,16 +73,8 @@ public class OmokGame {
 
 	private void socketInitWithPane()
 	{
-		InetAddress addr = null;
 		mySocket = new OmokSocket();
-		try
-		{
-			addr = InetAddress.getLocalHost();	// +IP를 직접 받아올 수 있도록 바꿈
-		}
-		catch(IOException e)
-		{
-			e.getMessage();
-		}
+		
 		String input = (String) JOptionPane.showInputDialog(null, "게임 생성 / 게임 참여", "참여 모드", JOptionPane.QUESTION_MESSAGE, null, joinMode, joinMode[0]);
 		if(input.equals("게임 생성(선공)"))	// 게임을 생성한 쪽이 서버가 됨
 		{
@@ -91,15 +84,14 @@ public class OmokGame {
 		}
 		else	// 게임을 참가한 쪽이 클라이언트가 됨
 		{
-			String ipNum = addr.getHostAddress().toString();
 			String portNum = JOptionPane.showInputDialog("Enter portNum");
-			mySocket.beClient(ipNum, Integer.parseInt(portNum));
+			mySocket.beClient(Integer.parseInt(portNum));
 			myTurn = false;
     	}
 	}
 
-	private void socketInit(boolean host, int portNum, String ipNum)
-	{
+	private void socketInit(boolean host, int portNum)
+	{		
 		mySocket = new OmokSocket();
 		if(host)
 		{
@@ -108,7 +100,7 @@ public class OmokGame {
 		}
 		else
 		{
-			mySocket.beClient(ipNum, portNum);
+			mySocket.beClient(portNum);	
 			myTurn = false;
 		}
 	}
