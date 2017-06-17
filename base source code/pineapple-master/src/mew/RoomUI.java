@@ -143,32 +143,6 @@ public class RoomUI extends JFrame {
         			if(y <= cal)
         			{
         				pm.show(uList, x, y);
-        				infoItem.addActionListener(new ActionListener(){	// 친구 정보 아이템 클릭 시
-        			    	public void actionPerformed(ActionEvent e1)
-        			    	{
-        			    		System.out.println(room.getUserArray());
-        			    		int selectedIndex = uList.getSelectedIndex();	// 리스트에서 선택한 개체의 인덱스
-        			    		if(uList.getSelectedValue().toString().equals("["+room.getUserArray().get(selectedIndex).getNickName()+"]"))
-        			    		{
-        			    			FriendInfo fi = new FriendInfo(room.getUserArray().get(selectedIndex));
-        			    			fi.setVisible(true);
-        			    		}
-        			    	}
-        			    });
-        			    
-        			    friendAddItem.addActionListener(new ActionListener(){
-        			    	public void actionPerformed(ActionEvent e2)
-        			    	{
-        			    		OmokGame omok = new OmokGame(19);	// 19줄 판으로 오목 게임 실행
-        			    	}
-        			    });
-        			    
-        			    omokItem.addActionListener(new ActionListener(){
-        			    	public void actionPerformed(ActionEvent e3)
-        			    	{
-        			    		OmokGame omok = new OmokGame(19);	// 19줄 판으로 오목 게임 실행
-        			    	}
-        			    });
         			}
         		}
             }

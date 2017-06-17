@@ -26,6 +26,7 @@ public class SixClient implements Runnable {
 
 	SixClient() {
 		login = new LoginUI(this);
+		this.userArray = new ArrayList<User>();
 		// 스레드 시작
 		Thread thread = new Thread(this);
 		thread.start();
@@ -450,7 +451,6 @@ public class SixClient implements Runnable {
 			restRoom.friendTree.updateUI();
 	
 	}
-	
 	
 	
 	// getter, setter
