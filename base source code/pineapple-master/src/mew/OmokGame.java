@@ -1,4 +1,4 @@
-package mew;
+package Chat;
 
 import java.io.IOException;
 import java.net.InetAddress;

@@ -1,4 +1,4 @@
-package mew;
+package Chat;
 
 import java.net.Socket;
 import java.net.ServerSocket;

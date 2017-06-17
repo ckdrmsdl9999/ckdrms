@@ -1,4 +1,5 @@
-package mew;
+package Chat;
+
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;

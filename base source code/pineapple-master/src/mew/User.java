@@ -1,4 +1,5 @@
-package mew;
+package Chat;
+
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -12,7 +13,7 @@ public class User {
 	private String name; // +사용자 이름
 	private boolean online;
 	private ArrayList<Room> user_rooms; // 사용자가 입장한 방의 목록
-
+	private ArrayList<String> friend=new ArrayList(10);//개개인의 친구목록 저장
 	private DataInputStream dis; // 입력스트림
 	private DataOutputStream dos; // 출력스트림
 
@@ -34,9 +35,7 @@ public class User {
 	public static final String ECHO01 = "MM"; // 대기실 채팅
 	public static final String ECHO02 = "ME"; // 채팅방 채팅
 	public static final String WHISPER = "MW"; // 귓속말
-	
-	public static final String GET_USERS = "GU";
-
+	public static final String FRIEND = "FR"; // 친구추가
 	User() {
 
 	}
@@ -146,5 +145,12 @@ public class User {
 
 	public void setRooms(ArrayList<Room> rooms) {
 		this.user_rooms = rooms;
+	}
+	public ArrayList<String> getfriendArray() {
+		return friend;
+	}
+
+	public void setfriend(ArrayList<String> friends) {
+		this.friend = friends;
 	}
 }
