@@ -1,4 +1,4 @@
-package Chat;
+package mew;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -10,7 +10,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -28,18 +27,18 @@ public class SixServer extends JFrame implements Runnable {
 	private DataInputStream is;
 	private ArrayList<User> userArray; // 서버에 접속한 사용자들
 	private ArrayList<Room> roomArray; // 서버가 열어놓은 채팅방들
+
 	private int sizeX = 600, sizeY = 600;
 	private Dimension whole, part;
 	private int xPos, yPos;
 	private JTextArea jta;
-
 	private JPanel jp;
 
 	SixServer() {
 		userArray = new ArrayList<User>();
 		roomArray = new ArrayList<Room>();
-		
-		setTitle("뮤뮤 서버");
+
+		setTitle("채팅프로그램 Server");
 		setSize(sizeX, sizeY);
 
 		jta = new JTextArea();
@@ -69,6 +68,7 @@ public class SixServer extends JFrame implements Runnable {
 
 	public static void main(String[] args) {
 		// Create server UI
+		JFrame.setDefaultLookAndFeelDecorated(true);	// 창 UI 변경
 		System.out.println("Server start...");
 		SixServer server = new SixServer();
 		Thread thread = new Thread(server);

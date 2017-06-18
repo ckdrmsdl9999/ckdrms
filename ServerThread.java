@@ -1,4 +1,4 @@
-package Chat;
+package mew;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -8,17 +8,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-
 import javax.swing.JTextArea;
 
 public class ServerThread implements Runnable {
-
 	private ArrayList<User> userArray; // 서버에 접속한 사용자들
 	private ArrayList<Room> roomArray; // 서버가 열어놓은 채팅방들
 	private User user; // 현재 스레드와 연결된(소켓이 생성된) 사용자
 	private JTextArea jta;
 	private boolean onLine = true;
-
+	//------------------------------------------------------------------//
+	// id을 전역변수 선언
+	private String id;
+	//------------------------------------------------------------------//
 	private DataOutputStream thisUser;
 	
 	ServerThread(JTextArea jta, User person, ArrayList<User> userArray, ArrayList<Room> roomArray) {
@@ -47,27 +48,36 @@ public class ServerThread implements Runnable {
 					e1.printStackTrace();
 				} finally {
 					jta.append("에러 : 서버스레드-읽기 실패\n");
+					userArrayDelete();	// 서버에서 떠난 클라이언트를 제외시키는 메소드
 					break;
 				}
 			}
 		}
+	}
+	
+	public void userArrayDelete(){
+		//------------------------------------------------------------------//
+		//회원탈퇴 후 userArray에서 정보를 삭제하기 위한 부분
+		for (int i = 0; i < userArray.size(); i++) {
+			if (id.equals(userArray.get(i).getId())) {
+				userArray.remove(i);
+			}
+		}
+		//------------------------------------------------------------------//
 	}
 
 	// 데이터를 구분
 	public synchronized void dataParsing(String data) {
 		StringTokenizer token = new StringTokenizer(data, "/"); // 토큰 생성
 		String protocol = token.nextToken(); // 토큰으로 분리된 스트링을 숫자로
-		String id, pw, rType, rNum, nick, name, rName, msg;	// +이름 추가
-		int rName1=0;
+		String pw, rType, rNum, nick, name, rName, msg,myid;	// +이름 추가
 		System.out.println("서버가 받은 데이터 : " + data);
 
 		switch (protocol) {
-		case User.FRIEND: // 로그인
-			// 사용자가 입력한(전송한) 아이디와 패스워드
-			String id2=token.nextToken();
-			String friend2=token.nextToken();
-			add(id2,friend2,thisUser);
-			
+		case User.FRIEND:
+			String myId=token.nextToken();
+			String friendId=token.nextToken();
+			add(myId,friendId,thisUser);
 			break;
 		
 		case User.LOGIN: // 로그인
@@ -85,20 +95,21 @@ public class ServerThread implements Runnable {
 			name = token.nextToken();	// +이름 추가
 			member(id, pw, name);
 			break;
-		case User.INVITE: // 초대하기
-			id = null;
+		case User.INVITE: // 초대하기.
+			myid = null;
 			rNum=null;
 			rName=null;
 			rType=null;
 			// 한명씩 초대
 			while (token.hasMoreTokens()) {
 				// 초대할 사람의 아이디와 방번호
-				id = token.nextToken();
+			    myid = token.nextToken();
 				rNum = token.nextToken();
 				rName=token.nextToken();
 				rType=token.nextToken();
-				invite(id, rNum,rName,rType);
+				invite(myid, rNum,rName,rType);
 			}
+		//	jta.append("확인 흐름"+myid+rNum+rName+rType);
 			userList(rNum);//친구초대후 목록업데이트
 			break;
 		case User.UPDATE_USERLIST: // 대기실 사용자 목록
@@ -151,9 +162,37 @@ public class ServerThread implements Runnable {
 			msg = token.nextToken();
 			whisper(id, msg);
 			break;
+		case User.OMOK_INVITE:
+			id = token.nextToken();
+			String lineNum = token.nextToken();
+			String portNum = token.nextToken();
+			omokInvite(id, lineNum, portNum);
+			break;
 		}
 	}
 
+	public void omokInvite(String id, String lineNum, String portNum)
+	{	
+		for(int i=0; i<this.userArray.size(); i++)	// contains로 바꿔도 되나???
+		{
+			if(this.userArray.get(i).getId().equals(id))
+			{
+				User invitedUser = this.userArray.get(i);
+				try
+				{
+					invitedUser.getDos().writeUTF(User.OMOK_INVITE + "/" + user.getId() + "/" + lineNum + "/" + portNum);
+				}
+				catch(Exception e)
+				{
+					
+				}
+				break;
+			}
+		}
+				
+		
+	}
+	
 	public void alarm() {
 
 	}
@@ -243,8 +282,6 @@ public class ServerThread implements Runnable {
 		}
 	}
 
-	
-	
 	// 대기실 에코
 	private void echoMsg(String msg) {
 		for (int i = 0; i < userArray.size(); i++) {
@@ -284,12 +321,12 @@ public class ServerThread implements Runnable {
 	// 대기실닉네임 변경
 	private void changeNick(String nick, String name) {
 		File file = new File("C:\\Users\\윤창근\\Desktop\\공소\\" + user.getId() + ".txt");
-		FileWriter f;
+		FileWriter writer;
 		try {
-			f = new FileWriter(file);
+			writer = new FileWriter(file);
 			// 파일에 회원정보쓰기 (아이디+패스워드+닉네임+이름)
-			f.write(user.getId() + "/" + user.getPw() + "/" + nick + "/" + name);	// +이름도 받아오게 추가
-			f.close();
+			writer.write(user.getId() + "/" + user.getPw() + "/" + nick + "/" + name);	// +이름도 받아오게 추가
+			writer.close();
 			thisUser.writeUTF(User.MEMBERSHIP + "/OK");
 		} catch (IOException e1) {
 			e1.printStackTrace();
@@ -314,12 +351,12 @@ public class ServerThread implements Runnable {
 		}
 	}
 
-	private void invite(String id, String rNum,String rName,String rType) {//친구초대
+	private void invite(String myid, String rNum,String rName,String rType) {//친구초대
 		int temp=0;
 		String temp2="";//임시내용저장
 		for (int i = 0; i < userArray.size(); i++) {
 			// 초대할사람을 찾아서 초대메시지 보냄
-			if (id.equals(userArray.get(i).getId())) {
+			if (myid.equals(userArray.get(i).getId())) {
 				try {
 					temp=i;				
 					// 초대한 사람의 아이디와 방번호를 전송
@@ -328,7 +365,7 @@ public class ServerThread implements Runnable {
 							.getDos()
 							.writeUTF(
 									User.INVITE + "/" +  userArray.get(i).getId() + "/"+ rNum+"/"+rName+"/"+rType);
-
+					jta.append("check"+myid+" equals와 일치하는ㄴ사람"+userArray.get(i).getId()+"입니다ㅏ");
 				} catch (IOException e) {
 					e.printStackTrace();
 					jta.append("에러 : 초대실패-" + userArray.toString() + "\n");
@@ -336,11 +373,11 @@ public class ServerThread implements Runnable {
 				
 				for (int o = 0; o < userArray.size(); o++) {
 					
-					if (id.equals(userArray.get(o).getId())) {///////////////////////////초대받은사람목록업데이트!
+					if (myid.equals(userArray.get(o).getId())) {///////////////////////////초대받은사람목록업데이트!
 				try {
 					// 데이터 전송
 					userArray.get(i).getDos().writeUTF(User.UPDATE_ROOM_USERLIST + "/"+rNum);
-					jta.append("성공 : invite에서 update room userlist 목록(사용자)-" + rNum + "\n");
+					jta.append("성공 : invite에서 update room userlist 목록(사용자)-" + rNum+"초대받은사람이름:" +id +"\n");
 				} catch (IOException e) {
 					jta.append("에러 : 목록(사용자) 전송 실패\n");
 				}
@@ -348,7 +385,7 @@ public class ServerThread implements Runnable {
 															}
 			}
 		}
-		if (id.equals(userArray.get(temp).getId())){
+		if (myid.equals(userArray.get(temp).getId())){
 		for (int p = 0; p < roomArray.size(); p++){//서버에 열린 roomarray안에 user객체넣기! 참고(equals부분 원래 String.euqls(int)라서안됐었음)
 			if (rNum.equals(String.valueOf(roomArray.get(p).getRoomNum()))){
 				roomArray.get(p).getUserArray().add(userArray.get(temp));	
@@ -477,7 +514,6 @@ public class ServerThread implements Runnable {
 			jta.append("실패 : 파일 읽기\n");
 			return;
 		}
-
 	}
 
 	private void logout() {
@@ -596,17 +632,14 @@ public class ServerThread implements Runnable {
 				temp = roomArray.get(i);
 				for (int j = 0; j < roomArray.get(i).getUserArray().size(); j++) {
 					// 채팅방에 접속되어 있는 유저들의 아이디+닉네임
-					ul += "/"
-							+ roomArray.get(i).getUserArray().get(j)
-									.toProtocol();
+					ul += "/"+ roomArray.get(i).getUserArray().get(j).toProtocol();
 				}
 			}
 		}
 		for (int i = 0; i < temp.getUserArray().size(); i++) {
 			try {
 				// 데이터 전송
-				temp.getUserArray().get(i).getDos()
-						.writeUTF(User.UPDATE_ROOM_USERLIST + ul);
+				temp.getUserArray().get(i).getDos().writeUTF(User.UPDATE_ROOM_USERLIST + ul);
 				jta.append("성공 : 목록(사용자)-" + ul + "\n");
 			} catch (IOException e) {
 				jta.append("에러 : 목록(사용자) 전송 실패\n");
@@ -633,95 +666,54 @@ public class ServerThread implements Runnable {
 			jta.append("에러 : 목록(방) 전송 실패\n");
 		}
 	}
-	////////////////////////////////////////////////////////////
-public void add(String id,String friend,DataOutputStream target) {//친구목록추가하는부분
-		
 
+	public void add(String myId, String friendId, DataOutputStream target) {	//친구목록추가
 		File file = new File("C:\\Users\\윤창근\\Desktop\\공소\\" + id + ".txt");
-		File file3= new File("C:\\Users\\윤창근\\Desktop\\공소\\" + friend + ".txt");
-		FileReader reader2;
+		FileReader reader;
 		int inputValue = 0;
-		String str="";
-		String str2="";
-		String temp="";
-		String userid="";
-		String userpw="";
-		String usernick="";
-		String username="";
-		int confirm=1;
-		jta.append("확인하려고함:"+id+"과"+friend+"\n");
-		try {
+		String str="", temp="", userid="", userpw="", usernick="", username="";
+		
+		try
+		{
 			// 파일 열기
-			reader2 = new FileReader(file);
-			while ((inputValue = reader2.read()) != -1) {
+			reader = new FileReader(file);
+			while ((inputValue = reader.read()) != -1) {
 				// 파일 읽음
 				str+=((char) inputValue);
 			}
 			jta.append("성공 : 파일 읽기 : C:\\Users\\윤창근\\Desktop\\공소\\" + id + ".txt\n"+str+"<--str\n");
-			//reader2.close();
+			reader.close();
 			String token[]=str.split("/");
 			for(int zi=4;zi<token.length;zi++)
 			{	if(zi==token.length-1)
 				temp+=token[zi];
 			else
 				temp+=token[zi]+"/";
-			
-			if(token[zi].equals(token[3]+"("+friend+")")||friend.equals(id))//트리가아닌 파일에서 읽어온 이름과비교
-				confirm=2;//친구목록에 이미 같은게 존재하는지 확인하는거추가 나자신인지아닌지추가
 			}
-			userid=token[0];//위치 밑으로가면 이상해짐 여기있어야 예외나도 텍스트파일제대로출력
-			userpw=token[1];//위치 밑으로가면 이상해짐 여기있어야 예외나도 텍스트파일제대로출력
-			usernick=token[2];//위치 밑으로가면 이상해짐 여기있어야 예외나도 텍스트파일제대로출력
-			username=token[3];//위치 밑으로가면 이상해짐 여기있어야 예외나도 텍스트파일제대로출력
-			
-		
-			reader2=new FileReader(file3);
-			while ((inputValue = reader2.read()) != -1) {
-				// 파일 읽음
-				str2+=((char) inputValue);
-			}
-			String token2[]=str2.split("/");//token2[3]에이름
 	
-			if(confirm==1)//친구목록 실행
-				target.writeUTF(User.FRIEND+"/"+token2[3]+"("+friend+")");
-			
-		reader2.close();
-		
-		
+			target.writeUTF(User.FRIEND+"/"+friendId);
+			userid=token[0];
+			userpw=token[1];
+			usernick=token[2];
+			username=token[3];
 		}
-			catch (IOException e) {//실재 존재하는아이디인지확인 업으면 예외처리 and 메시지출력 "그런아이디는 존재하지 않습니다"
-				e.printStackTrace();
-				jta.append("오류나서 실패~  그런아이디는 존재하지 않습니다\n");
-				confirm=2;//원래 confirm1이었는데 이경우에는 0으로 바꿔주니 다지워지는오류 , 바꾼원인 존재하지않는아이디 친구목록추가됨
-				try {
-					target.writeUTF(User.ERROR);
-				} catch (IOException e11) {
-					// TODO Auto-generated catch block
-					e11.printStackTrace();
-				}
-			}
-
-			File file2 = new File("C:\\Users\\윤창근\\Desktop\\공소\\" + id+ ".txt");//텍스트파일에 갱신된 친구정보써주는부분
-			FileWriter f;
-			try {
-				f = new FileWriter(file2);
-				// 파일에 회원정보쓰기 (아이디+패스워드+닉네임+유저네임+친구)
-				if(confirm==1&&temp.equals(""))//친구목록에 같은게 존재하지 않을때 실행 //예외부분에따라 쓰는게달라짐
-				f.write(userid+"/"+userpw+"/"+usernick+"/"+username+"/"+username+"("+friend+")");
-				else if(confirm==1&&!temp.equals(""))
-					f.write(userid+"/"+userpw+"/"+usernick+"/"+username+"/"+temp+"/"+username+"("+friend+")");
-				else if(confirm==2&&temp.equals(""))
-					f.write(userid+"/"+userpw+"/"+usernick+"/"+username);
-				else if(confirm==2)
-					f.write(userid+"/"+userpw+"/"+usernick+"/"+username+"/"+temp);
-				f.close();
-		
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			
+		catch (IOException e) {
+			e.printStackTrace();
+			jta.append("오류나서 실패~\n");
+		}
+	
+		File file2 = new File("C:\\Users\\윤창근\\Desktop\\공소\\" + id+ ".txt");
+		FileWriter writer;
+		try {
+			writer = new FileWriter(file2);
+			// 파일에 회원정보쓰기 (아이디+패스워드+닉네임)
+			writer.write(userid+"/"+userpw+"/"+usernick+"/"+username+"/"+temp+"/"+friendId);
+			writer.close();			
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 	}
-///////////////////////////////////////////////////////
+
 	// 채팅 방리스트
 	public void roomList() {
 		String rl = "";
@@ -730,11 +722,9 @@ public void add(String id,String friend,DataOutputStream target) {//친구목록추가
 			// 만들어진 채팅방들의 제목
 			rl += "/" + roomArray.get(i).toProtocol();
 		}
-
 		jta.append("test\n");
 
 		for (int i = 0; i < userArray.size(); i++) {
-
 			try {
 				// 데이터 전송
 				userArray.get(i).getDos().writeUTF(User.UPDATE_ROOMLIST + rl);

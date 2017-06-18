@@ -1,9 +1,14 @@
-package Chat;
-
+package mew;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import javax.swing.*;
 
 public class User {
 	private String IP;
@@ -22,7 +27,7 @@ public class User {
 	public static final String LOGOUT = "EO"; // 로그아웃
 	public static final String MEMBERSHIP = "EM"; // 회원가입
 
-	public static final String INVITE = "INVITE"; // 초대
+	public static final String INVITE = "EV"; // 초대
 	public static final String UPDATE_SELECTEDROOM_USERLIST = "ED"; // 대기실에서 선택한 채팅방의 유저리스트 업데이트
 	public static final String UPDATE_ROOM_USERLIST = "ES"; // 채팅방의 유저리스트 업데이트
 	public static final String UPDATE_USERLIST = "EU"; // 유저리스트 업데이트
@@ -35,8 +40,10 @@ public class User {
 	public static final String ECHO01 = "MM"; // 대기실 채팅
 	public static final String ECHO02 = "ME"; // 채팅방 채팅
 	public static final String WHISPER = "MW"; // 귓속말
+
+	public static final String OMOK_INVITE = "OI";
 	public static final String FRIEND = "FR"; // 친구추가
-	public static final String ERROR = "ERROR"; // 에러메시지용
+	
 	User() {
 
 	}
@@ -147,6 +154,7 @@ public class User {
 	public void setRooms(ArrayList<Room> rooms) {
 		this.user_rooms = rooms;
 	}
+	
 	public ArrayList<String> getfriendArray() {
 		return friend;
 	}

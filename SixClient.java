@@ -1,4 +1,5 @@
-package Chat;
+package mew;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -6,8 +7,10 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.StringTokenizer;
+import java.util.*;
 
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 public class SixClient implements Runnable {
@@ -16,7 +19,8 @@ public class SixClient implements Runnable {
 	private static String IP = ""; // 서버아이피주소
 	private Socket socket; // 소켓
 	private User user; // 사용자
-	
+	private ArrayList<User> userArray;	// +유저 목록
+	private textAndBackground tab=new textAndBackground();
 	public LoginUI login;
 	public RestRoomUI restRoom;
 	private DataInputStream dis = null;
@@ -25,12 +29,16 @@ public class SixClient implements Runnable {
 
 	SixClient() {
 		login = new LoginUI(this);
+		this.userArray = new ArrayList<User>();
 		// 스레드 시작
 		Thread thread = new Thread(this);
 		thread.start();
 	}
 
 	public static void main(String[] args) {
+		JDialog.setDefaultLookAndFeelDecorated(true);
+		JFrame.setDefaultLookAndFeelDecorated(true);	// 창 UI 변경
+
 		System.out.println("Client start...");
 		new SixClient();
 	}
@@ -118,10 +126,6 @@ public class SixClient implements Runnable {
 		System.out.println("받은 데이터 : " + data);
 		
 		switch (protocol) {
-		case User.ERROR:
-		errorMsg("그런 아이디는 존재하지 않습니다");
-			
-		break;
 		case User.FRIEND:
 			String friendaddarray="";//친구추가할 friend 임시저장할 스트링
 			friendaddarray=token.nextToken();
@@ -141,8 +145,8 @@ public class SixClient implements Runnable {
 				errorMsg(msg);
 			}
 			while(token.hasMoreTokens()){//ServerThread에서 읽어들인 친구목록 friendarray에삽입
-					user.getfriendArray().add(token.nextToken());
-				}
+				user.getfriendArray().add(token.nextToken());
+			}
 			break;
 			
 		case User.LOGOUT:
@@ -205,9 +209,29 @@ public class SixClient implements Runnable {
 			msg = token.nextToken();
 			whisper(id, nick, name, msg);
 			break;
-		}
+
+		case User.OMOK_INVITE:
+			id = token.nextToken();
+			String lineNum = token.nextToken();
+			String portNum = token.nextToken();
+			omokStart(id, lineNum, portNum);
+			break;
+		}	
 	}
 
+	public void omokStart(String id, String lineNum, String portNum)
+	{
+		String[] select = {"수락", "거절"};
+	
+		String input = (String) JOptionPane.showInputDialog(null, id + "님이 오목을 신청하셨습니다.", "오목 신청", JOptionPane.QUESTION_MESSAGE, null, select, select[0]);
+		if(input.equals("거절"))
+		{
+			System.out.println("오목 신청 거절");
+			return;
+		}
+		OmokGame omok = new OmokGame(Integer.parseInt(lineNum), true, Integer.parseInt(portNum));
+	}
+	
 	private void logout() {
 		try {
 			restRoom.dispose();
@@ -236,7 +260,9 @@ public class SixClient implements Runnable {
 					String nick = token.nextToken();
 					String name = token.nextToken();
 					User tempUser = new User(id, nick, name);
-
+					
+					if(!userArray.contains(tempUser.getId()))
+						userArray.add(tempUser);
 					String rType = user.getRoomArray().get(i).getRoomType();	// 방 타입을 받아옴
 					if(rType.equals("일반"))	// +일반 채팅방일 경우	목록에 이름과 아이디가 뜨게하고
 						user.getRoomArray().get(i).getrUI().model.addElement(tempUser.toString());
@@ -250,7 +276,6 @@ public class SixClient implements Runnable {
 	// 선택한 채팅방의 사용자 리스트
 	private void selectedRoomUserList(StringTokenizer token) {
 		// 서버로부터 유저리스트(채팅방)를 업데이트하라는 명령을 받음
-
 		if (!restRoom.level_2_1.isLeaf()) {
 			// 리프노드가 아니고, 차일드가 있다면 모두 지움
 			restRoom.level_2_1.removeAllChildren();
@@ -261,7 +286,8 @@ public class SixClient implements Runnable {
 			String nick = token.nextToken();
 			String name = token.nextToken();
 			User tempUser = new User(id, nick, name);
-
+			if(!userArray.contains(tempUser.getId()))
+				userArray.add(tempUser);
 			// 채팅방 사용자노드에 추가
 			restRoom.level_2_1.add(new DefaultMutableTreeNode(tempUser.toString()));
 		}
@@ -271,7 +297,6 @@ public class SixClient implements Runnable {
 	// 대기실 사용자 리스트
 	private void userList(StringTokenizer token) {
 		// 서버로부터 유저리스트(대기실)를 업데이트하라는 명령을 받음
-
 		if (restRoom == null) {
 			return;
 		}
@@ -286,6 +311,8 @@ public class SixClient implements Runnable {
 			String nick = token.nextToken();
 			String name = token.nextToken();
 			User tempUser = new User(id, nick, name);
+			if(!userArray.contains(tempUser.getId()))
+				userArray.add(tempUser);
 
 			for (int i = 0; i < restRoom.userArray.size(); i++) {
 				if (tempUser.getId().equals(restRoom.userArray.get(i))) {
@@ -313,7 +340,9 @@ public class SixClient implements Runnable {
 		for(int ko=0;ko<user.getfriendArray().size();ko++)
 		restRoom.level1.add(new DefaultMutableTreeNode(user.getfriendArray().get(ko)));//로그인시userlist와 친구목록함께출력
 		restRoom.friendTree.updateUI();
-				
+		
+		
+		
 	}
 
 	// 서버로부터 방리스트를 업데이트하라는 명령을 받음
@@ -359,10 +388,13 @@ public class SixClient implements Runnable {
 		user.setId(id);	// +아이디 업데이트
 		user.setNickName(nick);
 		user.setName(name);
+		if(!userArray.contains(user.getId()))
+			userArray.add(user);
 
 		// 로그인창 닫고 대기실창 열기
-		login.dispose();
 		restRoom = new RestRoomUI(SixClient.this);
+		restRoom.setLocationRelativeTo(login.loginBtn);	// +상대 위치 지정
+		login.dispose();
 		restRoom.lb_id.setText(user.getId());
 		restRoom.lb_ip.setText(user.getIP());
 		restRoom.lb_nick.setText(user.getNickName());
@@ -370,18 +402,19 @@ public class SixClient implements Runnable {
 	}
 
 	private void whisper(String id, String nickName, String name, String msg) {
-		restRoom.restRoomArea.append("("+id+")님의 귓속말 : "+msg+"\n");	// 귓속말은 id로만 주고받게 수정
+		restRoom.restRoomArea.append("("+id+")님에게 귓속말 : "+msg+"\n");	// 귓속말은 id로만 주고받게 수정
 	}
-//
+
 	private void invite(String id, String rNum,String rName, String rType) {//친구초대 받은건 초대받은사람의아이디
-	
+		
 		Room theRoom = new Room(rName); // 방 객체 생성
 		theRoom.setRoomNum(Integer.parseInt(rNum)); // 방번호 설정
 		theRoom.setRoomType(rType);	// +방 타입 설정
-		theRoom.setrUI(new RoomUI(SixClient.this, theRoom)); // UI
+		theRoom.setrUI(new RoomUI(SixClient.this, theRoom,tab)); // UI
 		//사용자가 입장한 방리스트
 		 user.getRoomArray().add(theRoom);//이걸로인해 채팅창나오게함 
 	}
+
 
 	private void changeNick(String nick, String name) {
 		user.setNickName(nick);
@@ -416,6 +449,7 @@ public class SixClient implements Runnable {
 
 	
 	private void friendList(String friendaddarray) {
+		// 서버로부터 유저리스트(대기실)를 업데이트하라는 명령을 받음
 		user.getfriendArray().add(friendaddarray);
 		if (restRoom == null) {
 			return;
@@ -435,7 +469,6 @@ public class SixClient implements Runnable {
 			restRoom.friendTree.updateUI();
 	
 	}
-	
 	
 	
 	// getter, setter
@@ -511,4 +544,17 @@ public class SixClient implements Runnable {
 		this.ready = ready;
 	}
 
+	/**
+	 * @return the userArray
+	 */
+	public ArrayList<User> getUserArray() {
+		return userArray;
+	}
+
+	/**
+	 * @param userArray the userArray to set
+	 */
+	public void setUserArray(ArrayList<User> userArray) {
+		this.userArray = userArray;
+	}
 }

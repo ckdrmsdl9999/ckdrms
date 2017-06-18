@@ -1,5 +1,4 @@
-package Chat;
-
+package mew;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 
+import javax.swing.JPasswordField;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -24,7 +24,7 @@ public class LoginUI extends JFrame {
 	FileReader reader;
 	String addr;
 	public JTextField idText;
-	public JTextField pwText;
+	public JPasswordField pwText;
 	public JButton loginBtn, signUpBtn;
 	public MemberUI mem;
 	public JButton ipBtn;
@@ -48,7 +48,7 @@ public class LoginUI extends JFrame {
 	}
 
 	private void loginUIInitialize() {
-		setBounds(100, 100, 335, 218);
+		setBounds(760, 300, 335, 218);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(null);
 
@@ -92,7 +92,7 @@ public class LoginUI extends JFrame {
 		panel.add(idText);
 		idText.setColumns(10);
 
-		pwText = new JTextField();
+		pwText = new JPasswordField();
 		pwText.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -130,6 +130,7 @@ public class LoginUI extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				// 회원가입
 				mem = new MemberUI(client);
+				mem.setLocationRelativeTo(signUpBtn);
 			}
 		});
 		signUpBtn.setBounds(149, 111, 97, 23);
