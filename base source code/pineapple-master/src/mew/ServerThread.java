@@ -8,11 +8,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-
 import javax.swing.JTextArea;
 
 public class ServerThread implements Runnable {
-
 	private ArrayList<User> userArray; // 서버에 접속한 사용자들
 	private ArrayList<Room> roomArray; // 서버가 열어놓은 채팅방들
 	private User user; // 현재 스레드와 연결된(소켓이 생성된) 사용자
@@ -76,13 +74,10 @@ public class ServerThread implements Runnable {
 		System.out.println("서버가 받은 데이터 : " + data);
 
 		switch (protocol) {
-		case User.FRIEND: // 로그인
-			// 사용자가 입력한(전송한) 아이디와 패스워드
-			String id2=token.nextToken();
-			String friend2=token.nextToken();
-			//jta.append("확인zzz:"+id2+"/"+friend2+"\n");
-		add(id2,friend2,thisUser);
-			
+		case User.FRIEND:
+			String myId=token.nextToken();
+			String friendId=token.nextToken();
+			add(myId,friendId,thisUser);
 			break;
 		
 		case User.LOGIN: // 로그인
@@ -319,12 +314,12 @@ public class ServerThread implements Runnable {
 	// 대기실닉네임 변경
 	private void changeNick(String nick, String name) {
 		File file = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + user.getId() + ".txt");
-		FileWriter f;
+		FileWriter writer;
 		try {
-			f = new FileWriter(file);
+			writer = new FileWriter(file);
 			// 파일에 회원정보쓰기 (아이디+패스워드+닉네임+이름)
-			f.write(user.getId() + "/" + user.getPw() + "/" + nick + "/" + name);	// +이름도 받아오게 추가
-			f.close();
+			writer.write(user.getId() + "/" + user.getPw() + "/" + nick + "/" + name);	// +이름도 받아오게 추가
+			writer.close();
 			thisUser.writeUTF(User.MEMBERSHIP + "/OK");
 		} catch (IOException e1) {
 			e1.printStackTrace();
@@ -601,17 +596,14 @@ public class ServerThread implements Runnable {
 				temp = roomArray.get(i);
 				for (int j = 0; j < roomArray.get(i).getUserArray().size(); j++) {
 					// 채팅방에 접속되어 있는 유저들의 아이디+닉네임
-					ul += "/"
-							+ roomArray.get(i).getUserArray().get(j)
-									.toProtocol();
+					ul += "/"+ roomArray.get(i).getUserArray().get(j).toProtocol();
 				}
 			}
 		}
 		for (int i = 0; i < temp.getUserArray().size(); i++) {
 			try {
 				// 데이터 전송
-				temp.getUserArray().get(i).getDos()
-						.writeUTF(User.UPDATE_ROOM_USERLIST + ul);
+				temp.getUserArray().get(i).getDos().writeUTF(User.UPDATE_ROOM_USERLIST + ul);
 				jta.append("성공 : 목록(사용자)-" + ul + "\n");
 			} catch (IOException e) {
 				jta.append("에러 : 목록(사용자) 전송 실패\n");
@@ -638,31 +630,24 @@ public class ServerThread implements Runnable {
 			jta.append("에러 : 목록(방) 전송 실패\n");
 		}
 	}
-	////////////////////////////////////////////////////////////
-public void add(String id,String friend,DataOutputStream target) {//친구목록추가
-		
 
-		File file = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt");
-		FileReader reader2;
+	public void add(String myId, String friendId, DataOutputStream target) {	//친구목록추가
+		File file = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + myId + ".txt");
+		FileReader reader;
 		int inputValue = 0;
-		String str="";
-		String temp="";
-		String userid="";
-		String userpw="";
-		String usernick="";
-		String username="";
-		jta.append("확인하려고함:"+id+"과"+friend+"\n");
-		try {
+		String str="", temp="", userid="", userpw="", usernick="", username="";
+		
+		try
+		{
 			// 파일 열기
-			reader2 = new FileReader(file);
-			while ((inputValue = reader2.read()) != -1) {
+			reader = new FileReader(file);
+			while ((inputValue = reader.read()) != -1) {
 				// 파일 읽음
 				str+=((char) inputValue);
 			}
-			jta.append("성공 : 파일 읽기 : C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt\n"+str+"<--str\n");
-			reader2.close();
+			jta.append("성공 : 파일 읽기 : C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + myId + ".txt\n"+str+"<--str\n");
+			reader.close();
 			String token[]=str.split("/");
-			//token[token.length]=friend;//추가한부분<-----------여기서 오류났었음
 			for(int zi=4;zi<token.length;zi++)
 			{	if(zi==token.length-1)
 				temp+=token[zi];
@@ -670,32 +655,29 @@ public void add(String id,String friend,DataOutputStream target) {//친구목록추가
 				temp+=token[zi]+"/";
 			}
 	
-			//	jta.append("이것은 파일쓰기확인이다 :"+token[0]+"/"+token[1]+"/"+token[2]+"/"+temp+"\n");
-				target.writeUTF(User.FRIEND+"/"+friend);
-		userid=token[0];
-		userpw=token[1];
-		usernick=token[2];
-		username=token[3];
+			target.writeUTF(User.FRIEND+"/"+friendId);
+			userid=token[0];
+			userpw=token[1];
+			usernick=token[2];
+			username=token[3];
 		}
-			catch (IOException e) {
-				e.printStackTrace();
-				jta.append("오류나서 실패~\n");
-			}
-			//StringTokenizer token = new StringTokenizer(str.toString(), "/"); // 토큰
-			File file2 = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id+ ".txt");
-			FileWriter f;
-			try {
-				f = new FileWriter(file2);
-				// 파일에 회원정보쓰기 (아이디+패스워드+닉네임)
-				f.write(userid+"/"+userpw+"/"+usernick+"/"+username+"/"+temp+"/"+friend);
-				f.close();
-			//	thisUser.writeUTF(User.MEMBERSHIP + "/OK");
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			
+		catch (IOException e) {
+			e.printStackTrace();
+			jta.append("오류나서 실패~\n");
+		}
+	
+		File file2 = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + myId+ ".txt");
+		FileWriter writer;
+		try {
+			writer = new FileWriter(file2);
+			// 파일에 회원정보쓰기 (아이디+패스워드+닉네임)
+			writer.write(userid+"/"+userpw+"/"+usernick+"/"+username+"/"+temp+"/"+friendId);
+			writer.close();			
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 	}
-///////////////////////////////////////////////////////
+
 	// 채팅 방리스트
 	public void roomList() {
 		String rl = "";
@@ -704,11 +686,9 @@ public void add(String id,String friend,DataOutputStream target) {//친구목록추가
 			// 만들어진 채팅방들의 제목
 			rl += "/" + roomArray.get(i).toProtocol();
 		}
-
 		jta.append("test\n");
 
 		for (int i = 0; i < userArray.size(); i++) {
-
 			try {
 				// 데이터 전송
 				userArray.get(i).getDos().writeUTF(User.UPDATE_ROOMLIST + rl);

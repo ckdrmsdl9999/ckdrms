@@ -37,8 +37,8 @@ public class SixServer extends JFrame implements Runnable {
 	SixServer() {
 		userArray = new ArrayList<User>();
 		roomArray = new ArrayList<Room>();
-		
-		setTitle("뮤뮤 서버");
+
+		setTitle("채팅프로그램 Server");
 		setSize(sizeX, sizeY);
 
 		jta = new JTextArea();
@@ -68,6 +68,7 @@ public class SixServer extends JFrame implements Runnable {
 
 	public static void main(String[] args) {
 		// Create server UI
+		JFrame.setDefaultLookAndFeelDecorated(true);	// 창 UI 변경
 		System.out.println("Server start...");
 		SixServer server = new SixServer();
 		Thread thread = new Thread(server);

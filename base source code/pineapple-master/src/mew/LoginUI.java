@@ -48,7 +48,7 @@ public class LoginUI extends JFrame {
 	}
 
 	private void loginUIInitialize() {
-		setBounds(100, 100, 335, 218);
+		setBounds(760, 300, 335, 218);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(null);
 
@@ -130,6 +130,7 @@ public class LoginUI extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				// 회원가입
 				mem = new MemberUI(client);
+				mem.setLocationRelativeTo(signUpBtn);
 			}
 		});
 		signUpBtn.setBounds(149, 111, 97, 23);
