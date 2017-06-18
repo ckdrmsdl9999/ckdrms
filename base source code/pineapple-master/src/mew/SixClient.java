@@ -8,6 +8,9 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
+
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 public class SixClient implements Runnable {
@@ -33,6 +36,9 @@ public class SixClient implements Runnable {
 	}
 
 	public static void main(String[] args) {
+		JDialog.setDefaultLookAndFeelDecorated(true);
+		JFrame.setDefaultLookAndFeelDecorated(true);	// 창 UI 변경
+
 		System.out.println("Client start...");
 		new SixClient();
 	}
@@ -139,8 +145,8 @@ public class SixClient implements Runnable {
 				errorMsg(msg);
 			}
 			while(token.hasMoreTokens()){//ServerThread에서 읽어들인 친구목록 friendarray에삽입
-					user.getfriendArray().add(token.nextToken());
-				}
+				user.getfriendArray().add(token.nextToken());
+			}
 			break;
 			
 		case User.LOGOUT:
@@ -289,7 +295,6 @@ public class SixClient implements Runnable {
 	// 대기실 사용자 리스트
 	private void userList(StringTokenizer token) {
 		// 서버로부터 유저리스트(대기실)를 업데이트하라는 명령을 받음
-
 		if (restRoom == null) {
 			return;
 		}
@@ -381,10 +386,13 @@ public class SixClient implements Runnable {
 		user.setId(id);	// +아이디 업데이트
 		user.setNickName(nick);
 		user.setName(name);
+		if(!userArray.contains(user.getId()))
+			userArray.add(user);
 
 		// 로그인창 닫고 대기실창 열기
-		login.dispose();
 		restRoom = new RestRoomUI(SixClient.this);
+		restRoom.setLocationRelativeTo(login.loginBtn);	// +상대 위치 지정
+		login.dispose();
 		restRoom.lb_id.setText(user.getId());
 		restRoom.lb_ip.setText(user.getIP());
 		restRoom.lb_nick.setText(user.getNickName());
@@ -392,7 +400,7 @@ public class SixClient implements Runnable {
 	}
 
 	private void whisper(String id, String nickName, String name, String msg) {
-		restRoom.restRoomArea.append("("+id+")님의 귓속말 : "+msg+"\n");	// 귓속말은 id로만 주고받게 수정
+		restRoom.restRoomArea.append("("+id+")님에게 귓속말 : "+msg+"\n");	// 귓속말은 id로만 주고받게 수정
 	}
 
 	private void invite(String id, String rNum) {
