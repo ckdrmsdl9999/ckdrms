@@ -662,8 +662,7 @@ public class ServerThread implements Runnable {
 			username=token[3];
 		}
 		catch (IOException e) {
-			e.printStackTrace();
-			jta.append("오류나서 실패~\n");
+			jta.append("오류\n");
 		}
 	
 		File file2 = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + myId+ ".txt");
