@@ -1,6 +1,10 @@
 package mew;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.util.Scanner;
 import javax.swing.JOptionPane;
@@ -15,12 +19,10 @@ public class OmokGame{
 	protected int ver,hor;
 	protected int turn;
 	public boolean myTurn;
-	public boolean solo=false;
+	public boolean solo;
 	public boolean start;
 	private static final String[] playMode = {"혼자 하기", "둘이서 하기"};
 	private static final String[] joinMode = {"게임 생성(선공)", "게임 참여(후공)"};
-
-	Random random = new Random();
 	
 	public OmokGame(int lineNum)
 	{//for now with Pane
@@ -54,7 +56,6 @@ public class OmokGame{
 		if(!solo && !myTurn)
 		{
 			otherPut();
-			System.out.println("영심");
 		}
 	}
 	
@@ -79,12 +80,14 @@ public class OmokGame{
 		if(input.equals("게임 생성(선공)"))	// 게임을 생성한 쪽이 서버가 됨
 		{
 			String portNum = JOptionPane.showInputDialog("Enter portNum");
+			System.out.println("포트번호1 :" + portNum);
 			mySocket.beServer(Integer.parseInt(portNum));
 			myTurn = true;
 		}
 		else	// 게임을 참가한 쪽이 클라이언트가 됨
 		{
 			String portNum = JOptionPane.showInputDialog("Enter portNum");
+			System.out.println("포트번호2 :" + portNum);
 			mySocket.beClient(Integer.parseInt(portNum));
 			myTurn = false;
     	}
@@ -253,4 +256,50 @@ public class OmokGame{
 	{
 		return end;
 	}
+	
+	// 객체를 보내는 메소드
+	public void sendObject(int portNum) 
+	{ 
+		
+		FileOutputStream fos = null;	 // ObjectOutputStream 을 이용한 객체 파일 저장 
+		ObjectOutputStream oos = null; 
+		try
+		{ 
+			fos = new FileOutputStream("C:\\Users\\Park\\Desktop\\Chatting\\base source code\\pineapple-master\\object.dat"); 
+			oos = new ObjectOutputStream(fos); 	// 아웃풋 스트림 생성 
+
+			oos.writeObject(portNum);	 // 파일에 순차적으로 객체를 써줌
+		
+			System.out.println("객체를 저장했습니다."); 
+		}
+		catch(Exception e){ e.printStackTrace(); }
+		finally
+		{ 
+			if(fos != null) try{fos.close();}catch(IOException e){} 
+			if(oos != null) try{oos.close();}catch(IOException e){}	 // 스트림 닫기
+		} 
+	} 
+	
+	// 객체를 받는 메소드
+	public int receiveObject() 
+	{ 
+		FileInputStream fis = null;
+	 	ObjectInputStream ois = null;
+	 	
+	 	int portNum = 0;
+		try
+		{ 	 
+ 			fis = new FileInputStream("C:\\Users\\Park\\Desktop\\Chatting\\base source code\\pineapple-master\\object.dat"); 
+	 		ois = new ObjectInputStream(fis); 	// 객체를 읽어오는 인풋스트림 생성
+	 			 
+	 		portNum = (int)(ois.readObject());	// 객체를 읽어옴
+	 	}
+		catch(Exception e){ e.printStackTrace(); }
+		finally
+		{ 
+	 		if(fis != null) try{fis.close();}catch(IOException e){} 
+	 		if(ois != null) try{ois.close();}catch(IOException e){}		// 스트림 닫기 
+	 		return portNum;
+	 	} 
+ 	} 
 }

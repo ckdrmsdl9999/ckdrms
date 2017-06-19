@@ -22,7 +22,7 @@ public class Settings extends JFrame implements ActionListener, ItemListener{
 	private JLabel fontSet;
 	private JButton backgroundYellowColor, backgroundGreenColor, backgroundSkyColor;
 	private JButton fontBold, fontItalic, fontPlain;
-	private JButton passwordChange, setOn, memberLeave;
+	private JButton passwordChange, setOn, reset, memberLeave;
  //------------------------------------------------------------------//
  // 변경된 설정값을 전달할 때 필요한 참조 변수 tab
 	private textAndBackground tab;
@@ -62,7 +62,7 @@ public class Settings extends JFrame implements ActionListener, ItemListener{
 	}
    
 	public void settingUI(){
-		setBounds(100, 100, 420, 390);   // 바운더리 크기 조절
+		setSize(420, 390);   // 바운더리 크기 조절
 		contentPane = new JPanel();      // 설정 패널 생성
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
@@ -121,7 +121,7 @@ public class Settings extends JFrame implements ActionListener, ItemListener{
 		panel.add(passwordChange);      // panel에 추가
 		
 		letterSize = new JLabel();      // 글자크기 레이블
-		letterSize.setText("글자크기");   // 레이블에 스트링 출력
+		letterSize.setText("글자 크기");   // 레이블에 스트링 출력
 		letterSize.setBounds(30, 160, 70, 30);   // 바운더리 크기 조절
 		panel.add(letterSize);         // panel에 추가
 		
@@ -184,9 +184,15 @@ public class Settings extends JFrame implements ActionListener, ItemListener{
 		setOn.setBounds(30, 290, 165, 30);		
 		panel.add(setOn);
 		
-		memberLeave =  new JButton("회원탈퇴");      // 회원탈퇴 버튼
-		memberLeave.setBounds(215, 290, 165, 30);   // 바운더리 크기 조절
+		reset = new JButton("초기화");		// 초기화 버튼
+		reset.addActionListener(this);
+		reset.setBounds(215, 290, 165, 30);
+		panel.add(reset);
+		
+		memberLeave =  new JButton("회원 탈퇴");      // 회원탈퇴 버튼
+		memberLeave.setBounds(260, 20, 120, 30);   // 바운더리 크기 조절
 		memberLeave.addActionListener(this);
+		memberLeave.setBackground(Color.RED);
 		panel.add(memberLeave);         // panel에 추가
 		
 		this.setTitle("설정");            // 프레임 제목설정
@@ -245,18 +251,41 @@ public class Settings extends JFrame implements ActionListener, ItemListener{
 		
 		else if(e.getSource() == passwordChange)	// 비밀번호 변경 버튼 누를 시
 		{
-			
+			JOptionPane.showMessageDialog(this, "비밀번호가 변경 되었습니다.", "변경 완료", JOptionPane.INFORMATION_MESSAGE);
 		}
 		
 		else if(e.getSource() == memberLeave)
 		{
 			MemberLeaveUI ml = new MemberLeaveUI(client);
+			ml.setLocationRelativeTo(this.memberLeave);
 		}
 		
 		else if(e.getSource() == setOn)
 		{
 			System.out.println("설정 적용");
 			JOptionPane.showMessageDialog(this, "적용 되었습니다.", "설정 완료", JOptionPane.INFORMATION_MESSAGE);
+			backgroundYellowColor.setEnabled(true);		// 모든 버튼 enable
+			backgroundGreenColor.setEnabled(true);
+			backgroundSkyColor.setEnabled(true);
+			fontBold.setEnabled(true);
+			fontItalic.setEnabled(true);
+			fontPlain.setEnabled(true);
+		}
+		
+		else if(e.getSource() == reset)
+		{
+			System.out.println("설정 초기화");
+			JOptionPane.showMessageDialog(this, "모든 설정이 초기화 되었습니다.", "설정 완료", JOptionPane.INFORMATION_MESSAGE);
+			backgroundYellowColor.setEnabled(true);		// 모든 버튼 enable
+			backgroundGreenColor.setEnabled(true);
+			backgroundSkyColor.setEnabled(true);
+			fontBold.setEnabled(true);
+			fontItalic.setEnabled(true);
+			fontPlain.setEnabled(true);
+			
+			tab.setBackColor(new Color(224, 255, 255));		// 원래 폰트와 색으로 돌려줌
+			tab.setFont(Font.PLAIN);
+			tab.setSize(12);
 		}
 	}
    

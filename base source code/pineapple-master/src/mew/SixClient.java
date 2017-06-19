@@ -127,11 +127,10 @@ public class SixClient implements Runnable {
 		
 		switch (protocol) {
 		case User.FRIEND:
-			String friendaddarray="";//친구추가할 friend 임시저장할 스트링
-			friendaddarray=token.nextToken();
-			friendList(friendaddarray);
+			String friendAddArray="";//친구추가할 friend 임시저장할 스트링
+			friendAddArray=token.nextToken();
+			friendList(friendAddArray);
 			break;
-		
 		
 		case User.LOGIN: // 로그인
 			// 사용자가 입력한(전송한) 아이디와 패스워드
@@ -227,7 +226,7 @@ public class SixClient implements Runnable {
 			System.out.println("오목 신청 거절");
 			return;
 		}
-		OmokGame omok = new OmokGame(Integer.parseInt(lineNum), true, Integer.parseInt(portNum));
+		//OmokGame omok = new OmokGame(Integer.parseInt(lineNum), true, portNum, false);
 	}
 	
 	private void logout() {
@@ -400,7 +399,7 @@ public class SixClient implements Runnable {
 	}
 
 	private void whisper(String id, String nickName, String name, String msg) {
-		restRoom.restRoomArea.append("("+id+")님에게 귓속말 : "+msg+"\n");	// 귓속말은 id로만 주고받게 수정
+		restRoom.restRoomArea.append("("+id+")님으로 부터 : "+msg+"\n");	// 귓속말은 id로만 주고받게 수정
 	}
 
 	private void invite(String id, String rNum) {
@@ -439,27 +438,21 @@ public class SixClient implements Runnable {
 
 	
 	private void friendList(String friendaddarray) {
-		// 서버로부터 유저리스트(대기실)를 업데이트하라는 명령을 받음
 		user.getfriendArray().add(friendaddarray);
 		if (restRoom == null) {
 			return;
 		}
-	
-			// 대기실 사용자노드에 추가
 		if (!restRoom.level1.isLeaf()) {
 			// 리프노드가 아니고, 차일드가 있다면 모두 지움
 			restRoom.level1.removeAllChildren();
 		}
 		
 		for(int ko=0;ko<user.getfriendArray().size();ko++)
-			restRoom.level1.add(new DefaultMutableTreeNode(user.getfriendArray().get(ko)));//getID는 어디서썻지?
+			restRoom.level1.add(new DefaultMutableTreeNode(user.getfriendArray().get(ko)));
 		
 		int ko=user.getfriendArray().size()-1;
-		System.out.println(user.getfriendArray().get(ko)+"friendarray내용확인");//friendArray트리 갱신
-			restRoom.friendTree.updateUI();
-	
+		restRoom.friendTree.updateUI();
 	}
-	
 	
 	// getter, setter
 	public static int getPORT() {

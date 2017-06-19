@@ -123,6 +123,51 @@ public class RoomUI extends JFrame {
 		uList = new JList(new DefaultListModel());
 		model = (DefaultListModel) uList.getModel();
 	 
+		JPopupMenu pm = new JPopupMenu();	// +우클릭 시 나타날 팝업 메뉴 생성
+		JMenuItem infoItem = new JMenuItem("친구 정보");	// +팝업메뉴 아이템들
+	    JMenuItem friendAddItem = new JMenuItem("친구 추가");
+	    JMenuItem omokItem = new JMenuItem("오목 신청");
+	    pm.add(infoItem);
+	    pm.add(friendAddItem);
+	    pm.add(omokItem);
+	    
+	    uList.addMouseListener(new MouseAdapter() {	// +마우스 우클릭 시 팝업 메뉴 뜨기
+            public void mouseClicked(MouseEvent e)
+            {
+        		JList c = (JList)e.getComponent();
+        		int x = e.getX();
+        		int y = e.getY();
+        		
+        		if(!uList.isSelectionEmpty()&& uList.locationToIndex(e.getPoint()) == uList.getSelectedIndex())
+        		{  
+        			int count = c.getModel().getSize();
+        			int cal = count * 18;
+        			if(y <= cal)
+        			{
+        				pm.show(uList, x, y);
+        				infoItem.addActionListener(new ActionListener(){	// 친구 정보 아이템 클릭 시
+        			    	public void actionPerformed(ActionEvent e1)
+        			    	{
+        			    		System.out.println(room.getUserArray());
+        			    		int selectedIndex = uList.getSelectedIndex();	// 리스트에서 선택한 개체의 인덱스
+        			    		if(uList.getSelectedValue().toString().equals("["+room.getUserArray().get(selectedIndex).getNickName()+"]"))
+        			    		{
+        			    			FriendInfo fi = new FriendInfo(room.getUserArray().get(selectedIndex));
+        			    			fi.setVisible(true);
+        			    		}
+        			    	}
+        			    });
+        			    
+        			    omokItem.addActionListener(new ActionListener(){
+        			    	public void actionPerformed(ActionEvent e3)
+        			    	{
+        			    		OmokGame omok = new OmokGame(19);
+        			    	}
+        			    });
+        			}
+        		}
+            }
+	    });
 		scrollPane_1.setViewportView(uList);
 
 		JButton roomSendBtn = new JButton("보내기");
@@ -137,7 +182,7 @@ public class RoomUI extends JFrame {
 		
 		roomSendBtn.setBounds(324, 378, 150, 34);
 		getContentPane().add(roomSendBtn);
-
+		
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 		setVisible(true);
