@@ -5,8 +5,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.Random;
-import java.util.ArrayList;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
@@ -81,7 +80,7 @@ public class RoomUI extends JFrame {
  				chatArea.setFont(font);
  				//------------------------------------------------------------------//
 		chatArea.setEditable(false);
-		chatArea.setToolTipText("'/'키와 상대 유저의 id를 입력하면 친구를 방에 초대할 수 있습니다. ex) /james ");	// +툴팁 추가
+		chatArea.setToolTipText("'/invite'키와 상대 유저의 id를 입력하면 친구를 방에 초대할 수 있습니다. ex) /invite james ");	// +툴팁 추가
 		scrollPane.setViewportView(chatArea);
 		chatArea.append("◆채팅방이 개설되었습니다.◆\r\n");
 
@@ -110,10 +109,29 @@ public class RoomUI extends JFrame {
 
 		});
 		
-		//+오목 버튼과 창 끄기 버튼(방에서 나가는 것과 다름) 추가
+		// + 초대하기 버튼, 오목 버튼, 창 끄기 버튼(방에서 나가는 것과 다름) 추가
+		JButton btnInvite = new JButton();	// 초대 버튼
+		btnInvite.setText("초대하기");
+		btnInvite.setBounds(324, 10, 40, 40);
+		btnInvite.setVisible(true);
+		btnInvite.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				String id = (String)JOptionPane.showInputDialog(null, "초대하실 상대의 id를 입력해주세요.");
+				
+				if(invite(id))	// 예외 조건에 걸리지 않으면
+				{
+					try{
+						client.getDos().writeUTF(User.INVITE +"/"+ id + "/" + room.getRoomNum()+"/"+room.getRoomName()+"/"+room.getRoomType());
+					}catch(Exception e1)
+					{ e1.getMessage(); }
+				}
+			}
+		});
+		getContentPane().add(btnInvite);
+		
 		JButton btnOmok = new JButton();	// +오목 실행 버튼
 		btnOmok.setText("오목");
-		btnOmok.setBounds(324, 10, 40, 40);
+		btnOmok.setBounds(364, 10, 40, 40);
 		btnOmok.setVisible(true);
 		btnOmok.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
@@ -124,7 +142,7 @@ public class RoomUI extends JFrame {
 		
 		JButton btnClose = new JButton();	// +창 닫기 버튼
 		btnClose.setText("닫기");
-		btnClose.setBounds(364, 10, 40, 40);
+		btnClose.setBounds(404, 10, 40, 40);
 		btnClose.setVisible(true);
 		btnClose.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
@@ -184,6 +202,7 @@ public class RoomUI extends JFrame {
 	    			if(uList.getSelectedValue().toString().equals(client.getUserArray().get(i).toString()))
 	    			{	// 해당 사용자가 존재하면
 	    				FriendInfo fi = new FriendInfo(client.getUserArray().get(i));
+	    				fi.setLocationRelativeTo(panel);
 	    				fi.setVisible(true);	// 친구 정보 보기
 	    				break;
 	    			}
@@ -208,8 +227,6 @@ public class RoomUI extends JFrame {
 	    		}
 	    	}
 		});
-		
-		
 		
 		JButton roomSendBtn = new JButton("보내기");
 		roomSendBtn.addActionListener(new ActionListener()
@@ -252,27 +269,68 @@ public class RoomUI extends JFrame {
 	private void msgSummit() {
 		String string = chatField.getText();
 		String rType = room.getRoomType();
+		String id = "";
+		StringTokenizer token = new StringTokenizer(string, " "); // 토큰	
+		String trash=token.nextToken();
+		if(token.hasMoreTokens())
+			id = token.nextToken(); // 토큰으로 분리된 스트링
 		
 		if (!string.equals("")) {
 			try {
 				// 채팅방에 메시지 보냄
 				if(rType.equals("일반"))	// 일반 대화방과 익명 대화방을 구분
 				{
-					client.getDos().writeUTF(
-							User.ECHO02 + "/" + room.getRoomNum() + "/" + client.getUser().toNameString() + string);
+					if (trash.equals("/invite") && invite(id)) 	// +초대 추가한부분 일반채팅방
+						client.getDos().writeUTF(User.INVITE +"/"+ id + "/" + room.getRoomNum()+"/"+room.getRoomName()+"/"+room.getRoomType());
+					else
+						client.getDos().writeUTF(User.ECHO02 + "/" + room.getRoomNum() + "/" + client.getUser().toNameString() + string);
 				}
 				else
 				{
-					client.getDos().writeUTF(
-							User.ECHO02 + "/" + room.getRoomNum() + "/" + client.getUser().toNickNameString() + string);
+					if (trash.equals("/invite") && invite(id)) 	// +초대 추가한부분 일반채팅방
+						client.getDos().writeUTF(User.INVITE +"/"+ id + "/" + room.getRoomNum()+"/"+room.getRoomName()+"/"+room.getRoomType());
+					else
+						client.getDos().writeUTF(User.ECHO02 + "/" + room.getRoomNum() + "/" + client.getUser().toNickNameString() + string);
 				}
 				chatField.setText("");
-			} catch (IOException e) {
-				e.printStackTrace();
+			}
+			catch (IOException e) {
+				e.getMessage();
 			}
 		}
 	}
 
+	// +방으로 유저 초대 시 예외 사항들
+	public boolean invite(String id)
+	{
+		if(client.getUser().getId()==null || client.getUser().getId().equals(null))
+		{
+			System.out.println("올바른 사용자가 아닙니다.");
+			JOptionPane.showMessageDialog(null, "올바른 사용자가 아닙니다.");
+			return false;
+		}
+		else if(id.equals(client.getUser().getId()))
+		{
+			System.out.println("자신은 초대할 수 없습니다.");
+			JOptionPane.showMessageDialog(null, "자신은 초대할 수 없습니다");
+			return false;
+		}
+		else
+		{
+			boolean onLine = false;	// +사용자가 온라인 인지를 판단하는 플래그
+			for(int j=0; j<client.getUserArray().size(); j++)
+			{
+				if(client.getUserArray().get(j).getId().equals(id))
+				{
+					System.out.println("이미 방에 들어와 있는 사용자 입니다.");
+					JOptionPane.showMessageDialog(null, "이미 방에 들어와 있는 사용자 입니다.");
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
 	/**
 	 * @return the restRoom
 	 */

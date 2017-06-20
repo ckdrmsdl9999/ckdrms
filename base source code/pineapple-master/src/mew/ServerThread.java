@@ -70,12 +70,12 @@ public class ServerThread implements Runnable {
 	public synchronized void dataParsing(String data) {
 		StringTokenizer token = new StringTokenizer(data, "/"); // 토큰 생성
 		String protocol = token.nextToken(); // 토큰으로 분리된 스트링을 숫자로
-		String pw, rType, rNum, nick, name, rName, msg;	// +이름 추가
+		String pw, rType, rNum, nick, name, rName, msg, myId;	// +이름 추가
 		System.out.println("서버가 받은 데이터 : " + data);
 
 		switch (protocol) {
 		case User.FRIEND:
-			String myId=token.nextToken();
+			myId=token.nextToken();
 			String friendId=token.nextToken();
 			add(myId,friendId,thisUser);
 			break;
@@ -95,15 +95,19 @@ public class ServerThread implements Runnable {
 			name = token.nextToken();	// +이름 추가
 			member(id, pw, name);
 			break;
+			
 		case User.INVITE: // 초대하기
-			id = null;
 			// 한명씩 초대
+			rNum = null;
 			while (token.hasMoreTokens()) {
 				// 초대할 사람의 아이디와 방번호
-				id = token.nextToken();
+			    myId = token.nextToken();
 				rNum = token.nextToken();
-				invite(id, rNum);
+				rName=token.nextToken();
+				rType=token.nextToken();
+				invite(myId, rNum,rName,rType);
 			}
+			userList(rNum);//친구초대후 목록업데이트
 			break;
 		case User.UPDATE_USERLIST: // 대기실 사용자 목록
 			userList(thisUser);
@@ -122,11 +126,19 @@ public class ServerThread implements Runnable {
 		case User.UPDATE_ROOMLIST: // 방 목록
 			roomList(thisUser);
 			break;
+			
 		case User.CHANGE_NICK: // 닉네임 변경(대기실)
 			nick = token.nextToken();
 			name = token.nextToken();
 			changeNick(nick, name);
 			break;
+			
+		case User.CHANGEPW:	// +비밀번호 변경
+			myId=token.nextToken();
+			pw=token.nextToken();
+			changePw(myId,pw);
+			break;
+			
 		case User.CREATE_ROOM: // 방만들기
 			rNum = token.nextToken();
 			rName = token.nextToken();
@@ -311,6 +323,50 @@ public class ServerThread implements Runnable {
 		}
 	}
 
+	public void changePw(String myId, String pw) {	// 비밀번호 변경
+		File file = new File("C:\\members\\" + id + ".txt");
+		FileReader reader;
+		int inputValue = 0;
+		String str="", temp="", userId="", userPw="", usernick="", username="";
+		
+		try
+		{
+			// 파일 열기
+			reader = new FileReader(file);
+			while ((inputValue = reader.read()) != -1) {
+				// 파일 읽음
+				str+=((char) inputValue);
+			}
+			jta.append("성공 : 파일 읽기 : C:\\members\\" + myId + ".txt\n"+str+"<--str\n");
+			reader.close();
+			String token[]=str.split("/");
+			for(int zi=4;zi<token.length;zi++)
+			{	if(zi==token.length-1)
+				temp+=token[zi];
+			else
+				temp+=token[zi]+"/";
+			}
+			userId=token[0];
+			userPw=token[1];
+			usernick=token[2];
+			username=token[3];
+		}
+		catch (IOException e) {
+			jta.append("오류\n");
+		}
+				
+		File file2 = new File("C:\\members\\" + myId+ ".txt");
+		FileWriter writer;
+		try {
+			writer = new FileWriter(file2);
+			// 파일에 회원정보쓰기 (아이디+패스워드+닉네임)
+			writer.write(userId+"/"+pw+"/"+usernick+"/"+username+"/"+temp);
+			writer.close();			
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+	
 	// 대기실닉네임 변경
 	private void changeNick(String nick, String name) {
 		File file = new File("C:\\members\\" + user.getId() + ".txt");
@@ -344,17 +400,43 @@ public class ServerThread implements Runnable {
 		}
 	}
 
-	private void invite(String id, String rNum) {
+	private void invite(String myid, String rNum,String rName,String rType) 
+	{//친구초대
+		int temp=0;
+		String temp2="";//임시내용저장
 		for (int i = 0; i < userArray.size(); i++) {
 			// 초대할사람을 찾아서 초대메시지 보냄
-			if (id.equals(userArray.get(i).getId())) {
+			if (myid.equals(userArray.get(i).getId())) {
 				try {
+					temp=i;				
 					// 초대한 사람의 아이디와 방번호를 전송
-					userArray.get(i).getDos().writeUTF(User.INVITE + "/" + user.getId() + "/"+ rNum);
+					userArray.get(i).getDos().writeUTF(User.INVITE + "/" +  userArray.get(i).getId() + "/"+ rNum+"/"+rName+"/"+rType);
 				} catch (IOException e) {
 					e.printStackTrace();
 					jta.append("에러 : 초대실패-" + userArray.toString() + "\n");
 				}
+
+				for (int j = 0; j< userArray.size(); j++)
+				{	
+					if (myid.equals(userArray.get(j).getId()))
+					{ 	// 초대받은 유저 목록 업데이트
+						try {
+						// 데이터 전송
+							userArray.get(i).getDos().writeUTF(User.UPDATE_ROOM_USERLIST + "/"+rNum);
+							jta.append("성공 : invite에서 update room userlist 목록(사용자)-" + rNum+"초대받은사람이름:" +id +"\n");
+						} catch (IOException e) {
+							jta.append("에러 : 목록(사용자) 전송 실패\n");
+						}
+					}
+				}
+			}
+		}
+		if (myid.equals(userArray.get(temp).getId()))
+		{
+			for (int p = 0; p < roomArray.size(); p++)
+			{//서버에 열린 roomarray안에 user객체넣기! 참고(equals부분 원래 String.euqls(int)라서안됐었음)
+				if (rNum.equals(String.valueOf(roomArray.get(p).getRoomNum())))
+					roomArray.get(p).getUserArray().add(userArray.get(temp));
 			}
 		}
 	}

@@ -1,7 +1,6 @@
 package mew;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -25,6 +24,7 @@ public class SixClient implements Runnable {
 	public RestRoomUI restRoom;
 	private DataInputStream dis = null;
 	private DataOutputStream dos = null;
+	private textAndBackground tab=new textAndBackground();
 	public boolean ready = false;
 
 	SixClient() {
@@ -45,9 +45,7 @@ public class SixClient implements Runnable {
 
 	@Override
 	public void run() {
-		//
 		// 소켓 통신 시작
-		//
 		while (!ready) {
 			try {
 				Thread.sleep(10);
@@ -167,7 +165,9 @@ public class SixClient implements Runnable {
 				// 초대할 사람의 아이디와 방번호
 				id = token.nextToken();
 				rNum = token.nextToken();
-				invite(id, rNum);
+				rName=token.nextToken();
+				rType=token.nextToken();
+				invite(id, rNum,rName,rType);
 			}
 			break;
 		case User.UPDATE_USERLIST: // 대기실 사용자 목록
@@ -444,9 +444,16 @@ public class SixClient implements Runnable {
 		restRoom.restRoomArea.append("("+id+")님으로 부터 : "+msg+"\n");	// 귓속말은 id로만 주고받게 수정
 	}
 
-	private void invite(String id, String rNum) {
+	private void invite(String id, String rNum,String rName, String rType)	//친구초대 받은건 초대받은사람의아이디
+	{	
+		Room theRoom = new Room(rName); // 방 객체 생성
+		theRoom.setRoomNum(Integer.parseInt(rNum)); // 방번호 설정
+		theRoom.setRoomType(rType);	// +방 타입 설정
+		theRoom.setrUI(new RoomUI(SixClient.this, theRoom, tab)); // UI
+		user.getRoomArray().add(theRoom); // 채팅창을 띄움
+		theRoom.getUserArray().add(user);	// 해당 유저를 추가
 	}
-
+	
 	private void changeNick(String nick, String name) {
 		user.setNickName(nick);
 		user.setName(name);

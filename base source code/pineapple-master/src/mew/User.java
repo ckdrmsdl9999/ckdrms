@@ -2,13 +2,7 @@ package mew;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import javax.swing.*;
 
 public class User {
 	private String IP;
@@ -43,9 +37,9 @@ public class User {
 
 	public static final String OMOK_INVITE = "OI";
 	public static final String FRIEND = "FR"; // 친구추가
+	public static final String CHANGEPW="CP";	// 비밀번호 변경
 	
 	User() {
-
 	}
 
 	User(String id, String nick, String name) {
