@@ -7,7 +7,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.*;
-//------------------------------------------------------------------//
 // ActionListener 인터페이스 상속
 public class Settings extends JFrame implements ActionListener, ItemListener{
 //------------------------------------------------------------------//
@@ -23,13 +22,11 @@ public class Settings extends JFrame implements ActionListener, ItemListener{
 	private JButton backgroundYellowColor, backgroundGreenColor, backgroundSkyColor;
 	private JButton fontBold, fontItalic, fontPlain;
 	private JButton passwordChange, setOn, reset, memberLeave;
- //------------------------------------------------------------------//
- // 변경된 설정값을 전달할 때 필요한 참조 변수 tab
+
+	// 변경된 설정값을 전달할 때 필요한 참조 변수 tab
 	private textAndBackground tab;
 	private SixClient client;
- //------------------------------------------------------------------//
 
- //------------------------------------------------------------------//
  // Settings의 실행 내용은 같으나 생성자에서 tab값을 받아서 저장하고 set메소드를 실행하도록 틀만 변경
 	public Settings(textAndBackground tab, SixClient client){         
 		this.tab = tab;
@@ -38,9 +35,7 @@ public class Settings extends JFrame implements ActionListener, ItemListener{
 	}
 
 
-   //------------------------------------------------------------------//
 	public void set()   // main메소드를 set으로 변경해서 RestRoomUI와 연결
-   //------------------------------------------------------------------//
 	{
       // TODO Auto-generated method stub
 		EventQueue.invokeLater(new Runnable()
@@ -252,6 +247,12 @@ public class Settings extends JFrame implements ActionListener, ItemListener{
 		else if(e.getSource() == passwordChange)	// 비밀번호 변경 버튼 누를 시
 		{
 			JOptionPane.showMessageDialog(this, "비밀번호가 변경 되었습니다.", "변경 완료", JOptionPane.INFORMATION_MESSAGE);
+			try {
+				client.getDos().writeUTF(User.CHANGEPW + "/" + client.getUser().getId()+ "/" + userPw.getText());
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.getMessage();
+			}
 		}
 		
 		else if(e.getSource() == memberLeave)
@@ -320,6 +321,5 @@ public class Settings extends JFrame implements ActionListener, ItemListener{
 		{
 			tab.setSize(30);
 		}
-
 	}
 }

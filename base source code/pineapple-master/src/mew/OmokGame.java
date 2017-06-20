@@ -265,7 +265,7 @@ public class OmokGame{
 		ObjectOutputStream oos = null; 
 		try
 		{ 
-			fos = new FileOutputStream("C:\\Users\\Park\\Desktop\\Chatting\\base source code\\pineapple-master\\object.dat"); 
+			fos = new FileOutputStream("C:\\members\\object.dat"); 
 			oos = new ObjectOutputStream(fos); 	// 아웃풋 스트림 생성 
 
 			oos.writeObject(portNum);	 // 파일에 순차적으로 객체를 써줌
@@ -289,7 +289,7 @@ public class OmokGame{
 	 	int portNum = 0;
 		try
 		{ 	 
- 			fis = new FileInputStream("C:\\Users\\Park\\Desktop\\Chatting\\base source code\\pineapple-master\\object.dat"); 
+ 			fis = new FileInputStream("C:\\members\\object.dat"); 
 	 		ois = new ObjectInputStream(fis); 	// 객체를 읽어오는 인풋스트림 생성
 	 			 
 	 		portNum = (int)(ois.readObject());	// 객체를 읽어옴
