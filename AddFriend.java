@@ -1,3 +1,5 @@
+package mew;
+
 import java.awt.*;
 import javax.swing.*;
 

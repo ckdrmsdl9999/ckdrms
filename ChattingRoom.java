@@ -1,3 +1,4 @@
+package mew;
 import java.awt.*;
 import javax.swing.*;
 
@@ -68,21 +69,21 @@ public class ChattingRoom extends JFrame {
 		peopleNum.setColumns(10);
 		
 
-		ImageIcon imgBattle = new ImageIcon("C:\\Users\\Park\\ICONS\\btnBattle.jpg");	// 오목 아이콘 삽입
+		ImageIcon imgBattle = new ImageIcon("g:\\btnBattle.jpg");	// 오목 아이콘 삽입
 		btnBattle = new JButton(imgBattle);	// 1대1 대전 게임(오목)버튼
 		btnBattle.setToolTipText("오목 게임 신청");	// 마우스를 갖다 대면 글씨가 보이게끔 설정
 		btnBattle.setBounds(310, 10, 30, 30);
 		panel.add(btnBattle);
 		
 		
-		ImageIcon imgLeave = new ImageIcon("C:\\Users\\Park\\ICONS\\btnLeave.jpg");	// 나가기 아이콘 삽입
+		ImageIcon imgLeave = new ImageIcon("g:\\btnLeave.jpg");	// 나가기 아이콘 삽입
 		btnLeave = new JButton(imgLeave);	// 방 나가기 버튼
 		btnLeave.setToolTipText("방에서 나가기");
 		btnLeave.setBounds(340, 10, 30, 30);
 		panel.add(btnLeave);
 
 		
-		ImageIcon imgSettings = new ImageIcon("C:\\Users\\Park\\ICONS\\btnSettings.jpg");	// 설정 아이콘 삽입
+		ImageIcon imgSettings = new ImageIcon("g:\\btnSettings.jpg");	// 설정 아이콘 삽입
 		btnSettings = new JButton(imgSettings);	// 설정 버튼
 		btnSettings.setToolTipText("설정");
 		btnSettings.setBounds(370, 10, 30, 30);
@@ -111,7 +112,7 @@ public class ChattingRoom extends JFrame {
 		panel.add(scroll2);
 		
 		
-		ImageIcon imgSend = new ImageIcon("C:\\Users\\Park\\ICONS\\btnSend.jpg");	// 보내기 아이콘 삽입
+		ImageIcon imgSend = new ImageIcon("g:\\btnSend.jpg");	// 보내기 아이콘 삽입
 		btnSend = new JButton(imgSend);		// 보내기 버튼
 		btnSend.setToolTipText("보내기");
 		btnSend.setBounds(370, 600, 30, 30);

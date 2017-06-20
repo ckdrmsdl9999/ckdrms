@@ -1,4 +1,4 @@
-package changgeun;
+package mew;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import javax.swing.JFrame;
@@ -17,7 +17,8 @@ import javax.swing.ImageIcon;
 
 import java.awt.Choice;
 import java.awt.Color;
-public class woorijoin extends JFrame {
+
+public class join extends JFrame {
 	private JPanel contentPane;
 	private JTextField textField;
 	private JTextField txtId;
@@ -41,7 +42,7 @@ public class woorijoin extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					woorijoin frame = new woorijoin();
+					join frame = new join();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -50,7 +51,7 @@ public class woorijoin extends JFrame {
 		});
 	}
 
-	public woorijoin() {
+	public join() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 335, 565);
 		contentPane = new JPanel();
@@ -58,7 +59,7 @@ public class woorijoin extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		Image img=new ImageIcon().getImage();//배경그림사용하기위해 선언
-		final ImageIcon icon11=new ImageIcon("C:\\Users\\윤창근\\Desktop\\javawork\\changgeun\\src\\changgeun\\사진1.png");
+		final ImageIcon icon11=new ImageIcon("g:\\사진1.png");
 		//파일경로
 		JPanel panel = new JPanel(){//배경화면 받기위한 내용
 		    public void paintComponent(Graphics g) {

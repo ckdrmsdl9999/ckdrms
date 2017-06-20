@@ -1,10 +1,10 @@
-package changgeun;
+package mew;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Image;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -15,7 +15,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JProgressBar;
 import javax.swing.JEditorPane;
-public class woorilogin extends JFrame {
+
+public class login extends JFrame {
 	private JPanel contentPane;
 	private JTextField textField;
 	private JTextField txtID;
@@ -30,7 +31,7 @@ public class woorilogin extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					woorilogin frame = new woorilogin();
+					login frame = new login();
 					frame.setVisible(true);
 			} catch (Exception e) {
 					e.printStackTrace();
@@ -39,7 +40,7 @@ public class woorilogin extends JFrame {
 		});
 	}
 
-	public woorilogin() {
+	public login() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 274, 530);
 		contentPane = new JPanel();

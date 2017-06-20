@@ -1,5 +1,4 @@
-package Chat;
-
+package mew;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -34,6 +33,10 @@ public class User {
 	public static final String GETOUT_ROOM = "RO"; // 채팅방 나감
 	public static final String ECHO01 = "MM"; // 대기실 채팅
 	public static final String ECHO02 = "ME"; // 채팅방 채팅
+////문용 추가
+	public static final String ECHO03 = "MR";		//My room
+	public static final String ECHOBOT = "CB";		//챗봇용 코드
+////	
 	public static final String WHISPER = "MW"; // 귓속말
 	public static final String FRIEND = "FR"; // 친구추가
 	public static final String ERROR = "ERROR"; // 에러메시지용

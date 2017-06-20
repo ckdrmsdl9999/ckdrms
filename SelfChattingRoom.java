@@ -1,4 +1,8 @@
-import java.awt.*;
+package mew;
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.Font;
+
 import javax.swing.*;
 
 public class SelfChattingRoom extends JFrame {
@@ -69,28 +73,28 @@ public class SelfChattingRoom extends JFrame {
 		peopleNum.setColumns(10);
 		
 		
-		ImageIcon imgAutoReply = new ImageIcon("C:\\Users\\Park\\ICONS\\btnAutoReply.jpg");	// 자동응답 bot 아이콘 삽입
+		ImageIcon imgAutoReply = new ImageIcon("g:\\btnAutoReply.jpg");	// 자동응답 bot 아이콘 삽입
 		btnAutoReply = new JButton(imgAutoReply);	// 자동응답 bot 버튼
 		btnAutoReply.setToolTipText("자동응답 ON");		// 마우스 갖다 대면 나오는 메시지
 		btnAutoReply.setBounds(280, 10, 30, 30);
 		panel.add(btnAutoReply);
 		
 		
-		ImageIcon imgCalendar = new ImageIcon("C:\\Users\\Park\\ICONS\\btnCalendar.jpg");	// 캘린더 아이콘 삽입
+		ImageIcon imgCalendar = new ImageIcon("g:\\btnCalendar.jpg");	// 캘린더 아이콘 삽입
 		btnCalendar = new JButton(imgCalendar);	// 캘린더 버튼
 		btnCalendar.setToolTipText("캘린더 열기");
 		btnCalendar.setBounds(310, 10, 30, 30);
 		panel.add(btnCalendar);
 		
 		
-		ImageIcon imgLeave = new ImageIcon("C:\\Users\\Park\\ICONS\\btnLeave.jpg");	// 나가기 아이콘 삽입
+		ImageIcon imgLeave = new ImageIcon("g:\\btnLeave.jpg");	// 나가기 아이콘 삽입
 		btnLeave = new JButton(imgLeave);	// 나가기 버튼
 		btnLeave.setToolTipText("방에서 나가기");
 		btnLeave.setBounds(340, 10, 30, 30);
 		panel.add(btnLeave);
 
 		
-		ImageIcon imgSettings = new ImageIcon("C:\\Users\\Park\\ICONS\\btnSettings.jpg");	// 설정 아이콘 삽입
+		ImageIcon imgSettings = new ImageIcon("g:\\btnSettings.jpg");	// 설정 아이콘 삽입
 		btnSettings = new JButton(imgSettings);	// 설정 버튼
 		btnSettings.setToolTipText("설정");
 		btnSettings.setBounds(370, 10, 30, 30);
@@ -119,7 +123,7 @@ public class SelfChattingRoom extends JFrame {
 		panel.add(scroll2);
 		
 		
-		ImageIcon imgSend = new ImageIcon("C:\\Users\\Park\\ICONS\\btnSend.jpg");	// 보내기 아이콘 삽입
+		ImageIcon imgSend = new ImageIcon("g:\\btnSend.jpg");	// 보내기 아이콘 삽입
 		btnSend = new JButton(imgSend);	// 보내기 버튼
 		btnSend.setToolTipText("보내기");
 		btnSend.setBounds(370, 600, 30, 30);

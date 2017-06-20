@@ -1,5 +1,4 @@
-package Chat;
-
+package mew;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -71,7 +70,7 @@ public class LoginUI extends JFrame {
 		String recentId = null;
 		try		// +최근 로그인 아이디 읽어오기 try~catch문
 		{
-			reader = new FileReader("C:\\Users\\윤창근\\Desktop\\공소\\recent.txt");
+			reader = new FileReader("g:\\recent.txt");
 			int read;
 
 			  char[] data = new char[50];

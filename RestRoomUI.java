@@ -1,4 +1,4 @@
-package Chat;
+package mew;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -13,7 +13,8 @@ import javax.swing.tree.*;
 public class RestRoomUI extends JFrame implements ActionListener {
 
 	public int lastRoomNum = 1;
-	public JButton makeRoomBtn, makeAnonymousRoomBtn, makeNormalRoomBtn, getInRoomBtn, whisperBtn, sendBtn,friendBtn;
+	public int myRoomNum = 0;
+	public JButton makeRoomBtn, makeAnonymousRoomBtn, makeMyRoomBtn, getInRoomBtn, whisperBtn, sendBtn,friendBtn;
 	public JTree userTree;
 	public JTree friendTree;//친구목록트리!!
 	public JList roomList;
@@ -35,7 +36,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 	public DefaultMutableTreeNode level21;
 	public DefaultMutableTreeNode level22;
 	public DefaultMutableTreeNode level2;
-	
+	public int width = 100, height = 10;
 	
 	public RestRoomUI(SixClient sixClient) 
 	{
@@ -76,7 +77,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 
 		JPanel room = new JPanel();
 		room.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "채팅방",TitledBorder.CENTER, TitledBorder.TOP, null, null));
-		room.setBounds(12, 10, 477, 215);
+		room.setBounds(12, 10, 485, 215);
 		getContentPane().add(room);
 		room.setLayout(new BorderLayout(0, 0));
 
@@ -85,6 +86,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 
 		// 리스트 객체와 모델 생성
 		roomList = new JList(new DefaultListModel());
+		roomList.setPreferredSize(new Dimension(width, height));
 		roomList.addMouseListener(new MouseAdapter() 
 		{
 			@Override
@@ -111,7 +113,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		JPanel panel_2 = new JPanel();
 		room.add(panel_2, BorderLayout.SOUTH);
 
-		makeRoomBtn = new JButton("일반 채팅방 만들기");	// +일반 채팅방 생성
+		makeRoomBtn = new JButton("일반 채팅방");	// +일반 채팅방 생성
 		makeRoomBtn.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e) { }
@@ -126,7 +128,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 			}
 		});
 		
-		makeAnonymousRoomBtn = new JButton("익명 채팅방 만들기");	// +익명 채팅방 생성
+		makeAnonymousRoomBtn = new JButton("익명 채팅방");	// +익명 채팅방 생성
 		makeAnonymousRoomBtn.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e) { }
@@ -141,14 +143,35 @@ public class RestRoomUI extends JFrame implements ActionListener {
 			}
 		});
 		
-		makeRoomBtn.setSize(250, 50);
-		makeAnonymousRoomBtn.setSize(250, 50);
+		makeRoomBtn.setSize(100, 50);
+		makeAnonymousRoomBtn.setSize(100, 50);
 		
 		panel_2.add(makeRoomBtn);
 		panel_2.add(makeAnonymousRoomBtn);
-
-		getInRoomBtn = new JButton("방 입장하기");
-		getInRoomBtn.setSize(250, 50);
+		
+//////////////////(문용, 나와의 채팅방)			
+		JButton makeMyRoomBtn = new JButton("나와의 채팅");
+		makeMyRoomBtn.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {// 방만들기 버튼 클릭
+				myRoomNum = 0;
+				createMyRoom();		//방만들기
+			}
+		});
+		panel_2.add(makeMyRoomBtn);
+///////
+		
+				getInRoomBtn = new JButton("들어가기");
+				panel_2.add(getInRoomBtn);
+				getInRoomBtn.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+					}
+				});
+				getInRoomBtn.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+					}
+				});
+				getInRoomBtn.setSize(250, 50);
 		getInRoomBtn.addMouseListener(new MouseAdapter() 
 		{
 			@Override
@@ -158,7 +181,6 @@ public class RestRoomUI extends JFrame implements ActionListener {
 				getIn();
 			}
 		});
-		panel_2.add(getInRoomBtn);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 		JPanel user = new JPanel();
@@ -505,7 +527,31 @@ public class RestRoomUI extends JFrame implements ActionListener {
 			e.printStackTrace();
 		}
 	}
+////////
+	//(문용, 수정) 대기실 목록에 만들어진 방 추가하지 않기
 	
+		private void createMyRoom() {		//createRoom 메소드
+			String roomname = "나와의 채팅방";		//방이름
+			Room myRoom = new Room(roomname); // 방 객체 생성.		
+			myRoom.setRoomNum(myRoomNum);			//Room의 setRoomNum메소드 확인, 내 방은 방번호 0
+			myRoom.setRoomType("독백");
+			myRoom.setmrUI(new MyRoomUI(client, myRoom)); // RoomUI생성 후 client와 newRoom을 매개변수로 전달.
+
+			// 클라이언트의 myRoom만들기
+			client.getUser().getRoomArray().add(myRoom);		//내 방 만들어서 RestRoomUI의 객체 myRoom에 전달
+			//		//client 객체 내 getuser()메소드 실행
+													//user.getRoomArray()메소드 실행.
+													//arrayList<Room>에 새로운 방을 add한다. newRoom은 방금 만들어진 방이다.
+
+			try { 
+				client.getDos().writeUTF(			//client객체에서 getdos()호출, DataOutPutStream.writeUTF()실행
+				User.CREATE_ROOM + "/" + myRoom.toProtocol());	//DataOutPutStream.writeUTF는 서버에 ()내 문자열을 보낸다.
+			} catch (IOException e) {							//보내는 메시지 : myRoom/roomNum/roomName
+				e.printStackTrace();							//serverThread의 readUTF로 읽음
+			}
+		}
+		//(문용, 추가)여기까지
+///////	
 	private void getIn() 
 	{
 		// 선택한 방 정보
@@ -571,7 +617,6 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		}
 
 	}
-	
 }
 
 
