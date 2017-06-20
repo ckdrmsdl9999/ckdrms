@@ -440,18 +440,20 @@ public class RestRoomUI extends JFrame implements ActionListener {
 	{
 		// 메시지전송
 		String string = chatField.getText();
-		
 		if (!string.equals("")) 
 		{
 			if (string.substring(0, 1).equals("/")) 
 			{
-				
 				StringTokenizer token = new StringTokenizer(string, " "); // 토큰 생성
-				String id=null, msg=null;
+				String id="", msg="";
+				
 				try
 				{
 					id = token.nextToken(); // 토큰으로 분리된 스트링
-					msg = token.nextToken();
+					while(token.hasMoreTokens())	// + 띄어쓰기를 해도 귓속말이 되게끔 수정
+					{
+						msg += token.nextToken() + " ";
+					}
 				}
 				catch(Exception e)
 				{ }	// +토큰 자체가 존재하지 않을 때
@@ -484,7 +486,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 				try 
 				{
 					client.getDos().writeUTF(User.WHISPER + "/" + id + "/" + msg);
-					restRoomArea.append("("+id+")" + "님에게 : " + msg + "\n");
+					restRoomArea.append("("+id+")" + "님에게 : " + msg + "\n");	// +귓속말 내용 수정
 				}
 				catch (IOException e) 
 				{
@@ -527,7 +529,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 	    popup.add(friendAddItem);
 
 	    friendAddItem.addActionListener(new ActionListener()
-	    {	// + 친구 추가 버튼 클릭 시
+	    {	// + 친구 추가 아이템 클릭 시
 	    	public void actionPerformed(ActionEvent e1)
 	    	{
 	    		String friend = null;
@@ -539,27 +541,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 	    	    		friend = client.getUserArray().get(i).toString();
 	    	    	}
 	    	    }
-	    		
-	    		for(int i=0; i<friendTree.getComponentCount(); i++)
-	    		{
-	    			if(client.getUser().toString().equals(friend))
-	    			{
-	    				System.out.println("자신은 친구로 추가할 수 없습니다.");
-	    				JOptionPane.showMessageDialog(null, "자신은 친구로 추가할 수 없습니다.", "에러 메시지", JOptionPane.INFORMATION_MESSAGE);	// 에러창 띄움
-	    				return;
-	    			}
-	    			else if(client.getUser().getfriendArray().contains(friend))	// friendArray에 이미 있거나 자신의 아이디일 때
-	    			{
-	    				System.out.println("이미 등록되어 있는 친구");
-	    				JOptionPane.showMessageDialog(null, "이미 등록되어 있는 친구입니다.", "에러 메시지", JOptionPane.INFORMATION_MESSAGE);	// 에러창 띄움
-	    				return;
-	    			}
-	    		}
-	    		try {
-	    			client.getDos().writeUTF(User.FRIEND + "/"+ client.getUser().getId() + "/" + friend);
-	    		} catch (IOException e) {
-	    			e.printStackTrace();
-	    		}
+	    		addFriend(friend);
 	    	}
 	    });	 
 		
@@ -596,11 +578,10 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		Room newRoom = new Room(roomName); // 방 객체 생성
 		newRoom.setRoomNum(lastRoomNum);
 		newRoom.setRoomType("일반");
-		//------------------------------------------------------------------//
 	    // 설정 값을 전달할 참조 변수를 파라미터로 추가
 	    newRoom.setrUI(new RoomUI(client, newRoom, tab)); // UI
-	    //------------------------------------------------------------------//
 	    newRoom.getrUI().setLocationRelativeTo(this.chatField);	// 상대경로 지정
+	    newRoom.getrUI().setRestRoom(this);
 	    
 		// 클라이언트가 접속한 방 목록에 추가
 		client.getUser().getRoomArray().add(newRoom);
@@ -619,12 +600,11 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		Room newRoom = new Room(roomName); // 방 객체 생성
 		newRoom.setRoomNum(lastRoomNum);
 		newRoom.setRoomType("익명");
-		//------------------------------------------------------------------//
 	    // 설정 값을 전달할 참조 변수를 파라미터로 추가
 	    newRoom.setrUI(new RoomUI(client, newRoom, tab)); // UI
-	    //------------------------------------------------------------------//
 		newRoom.getrUI().setLocationRelativeTo(this.chatField);	// 상대경로 지정
-
+		newRoom.getrUI().setRestRoom(this);
+		
 		// 클라이언트가 접속한 방 목록에 추가
 		client.getUser().getRoomArray().add(newRoom);
 
@@ -647,11 +627,12 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		String rName = token.nextToken();
 		String rType = token.nextToken();
 
-		for(int i=0; i<client.getUser().getRoomArray().size(); i++)	// +접속 중인 방 번호 목록에 접속 시도한 방의 번호가 있을 경우 
+		for(int i=0; i<client.getUser().getRoomArray().size(); i++)	// +접속 중인 방 번호 목록에 접속 시도한 방의 번호가 있을 경우(이미 접속 중일 경우) 
 		{
 			if(client.getUser().getRoomArray().get(i).getRoomNum() == Integer.parseInt(rNum))
 			{
-				return;	// 입장 불가
+				client.getUser().getRoomArray().get(i).getrUI().setVisible(true);	// 창만 띄워줌
+				return;
 			}
 		}
 		
@@ -663,7 +644,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		theRoom.setrUI(new RoomUI(client, theRoom, tab)); // UI
 		//------------------------------------------------------------------//
 	    theRoom.getrUI().setLocationRelativeTo(this.chatField);	// 상대경로 지정
-
+	    theRoom.getrUI().setRestRoom(this);
 		// 클라이언트가 접속한 방 목록에 추가
 		client.getUser().getRoomArray().add(theRoom);
 
@@ -689,12 +670,25 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		maker.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	}
 	
-	private void addFriend() {/////serverThread로 보내는 내용
-		String friend = "";
-		friend=chatField.getText();
-
+	public void addFriend(String friend)
+	{
+		for(int i=0; i<friendTree.getComponentCount(); i++)
+		{
+			if(client.getUser().toString().equals(friend))
+			{
+				System.out.println("자신은 친구로 추가할 수 없습니다.");
+				JOptionPane.showMessageDialog(null, "자신은 친구로 추가할 수 없습니다.", "에러 메시지", JOptionPane.INFORMATION_MESSAGE);	// 에러창 띄움
+				return;
+			}
+			else if(client.getUser().getfriendArray().contains(friend))	// friendArray에 이미 있거나 자신의 아이디일 때
+			{
+				System.out.println("이미 등록되어 있는 친구");
+				JOptionPane.showMessageDialog(null, "이미 등록되어 있는 친구입니다.", "에러 메시지", JOptionPane.INFORMATION_MESSAGE);	// 에러창 띄움
+				return;
+			}
+		}
 		try {
-			client.getDos().writeUTF(User.FRIEND + "/"+client.getUser().getId()+"/"+ friend);
+			client.getDos().writeUTF(User.FRIEND + "/"+ client.getUser().getId() + "/" + friend);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

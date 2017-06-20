@@ -36,13 +36,13 @@ public class ServerAddress extends JFrame {
 			System.out.println("서버 IP 가져오기 실패");	// +IP를 찾지 못했을 경우
 		}
 		setTitle("서버 IP 주소 입력");
-		setBounds(100, 100, 306, 95);
+		setBounds(760, 300, 335, 95);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
 
 		JPanel panel = new JPanel();
 		panel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel.setBounds(12, 10, 266, 37);
+		panel.setBounds(12, 10, 300, 37);
 		getContentPane().add(panel);
 		panel.setLayout(new BorderLayout(0, 0));
 
@@ -53,10 +53,11 @@ public class ServerAddress extends JFrame {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 					loginUI.ipBtn.setText(ipText.getText());
 					loginUI.setVisible(true);
+					setVisible(false);
 					dispose();
 					loginUI.idText.requestFocus();
 				}
-			}
+			} 
 		});
 		ipText.setText(addr);	// 받아온 IP 주소를 기본값으로 써줌
 		panel.add(ipText, BorderLayout.CENTER);
