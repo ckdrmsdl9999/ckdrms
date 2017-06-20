@@ -166,7 +166,7 @@ public class ServerThread implements Runnable {
 
 	public void omokInvite(String id, String lineNum, String portNum)
 	{	
-		for(int i=0; i<this.userArray.size(); i++)	// contains로 바꿔도 되나???
+		for(int i=0; i<this.userArray.size(); i++)
 		{
 			if(this.userArray.get(i).getId().equals(id))
 			{
@@ -313,7 +313,7 @@ public class ServerThread implements Runnable {
 
 	// 대기실닉네임 변경
 	private void changeNick(String nick, String name) {
-		File file = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + user.getId() + ".txt");
+		File file = new File("C:\\members\\" + user.getId() + ".txt");
 		FileWriter writer;
 		try {
 			writer = new FileWriter(file);
@@ -368,7 +368,7 @@ public class ServerThread implements Runnable {
 			
 		
 		try {
-			File file = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt");
+			File file = new File("C:\\members\\" + id + ".txt");
 			if (!file.isFile()) {
 				FileWriter f = new FileWriter(file);
 
@@ -404,14 +404,23 @@ public class ServerThread implements Runnable {
 		
 		try {
 			// 파일 열기
-			reader = new FileReader("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt");
+			reader = new FileReader("C:\\members\\" + id + ".txt");
 			while ((inputValue = reader.read()) != -1) {
 				// 파일 읽음
 				str+=((char) inputValue);
 			}
-			jta.append("성공 : 파일 읽기 : C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + id + ".txt\n");
-			writer = new FileWriter("C:\\Users\\Park\\workspace\\MEW\\src\\members\\recent.txt");	// +최근 로그인한 id파일
-			writer.write(id);	// +id를 파일에 쓰기
+			jta.append("성공 : 파일 읽기 : C:\\members\\" + id + ".txt\n");
+			
+			File recent = new File("C:\\members\\recent.txt");
+			try
+			{
+				writer = new FileWriter(recent);	// +최근 로그인한 id파일
+				writer.write(id);	// +id를 파일에 쓰기
+			}
+			catch(Exception e)
+			{
+				e.getMessage();
+			}
 			reader.close();
 			writer.close();	// +파일닫기
 			String token[]=str.split("/"); // 토큰
@@ -424,8 +433,7 @@ public class ServerThread implements Runnable {
 							if (id.equals(userArray.get(i).getId())) {
 								try {
 									System.out.println("접속중");
-									thisUser.writeUTF(User.LOGIN
-											+ "/fail/이미 접속 중입니다.");
+									thisUser.writeUTF(User.LOGIN+ "/fail/이미 접속 중입니다.");
 								} catch (IOException e) {
 									e.printStackTrace();
 								}
@@ -540,7 +548,7 @@ public class ServerThread implements Runnable {
 		}
 		try {
 			// 데이터 전송
-			target.writeUTF(User.UPDATE_SELECTEDROOM_USERLIST + ul);
+			target.writeUTF(User.UPDATE_SELECTEDROOM_USERLIST + "/" + rNum + ul);
 			jta.append("성공 : 목록(사용자)-" + ul + "\n");
 		} catch (IOException e) {
 			jta.append("에러 : 목록(사용자) 전송 실패\n");
@@ -632,7 +640,7 @@ public class ServerThread implements Runnable {
 	}
 
 	public void add(String myId, String friendId, DataOutputStream target) {	//친구목록추가
-		File file = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + myId + ".txt");
+		File file = new File("C:\\members\\" + myId + ".txt");
 		FileReader reader;
 		int inputValue = 0;
 		String str="", temp="", userid="", userpw="", usernick="", username="";
@@ -645,7 +653,7 @@ public class ServerThread implements Runnable {
 				// 파일 읽음
 				str+=((char) inputValue);
 			}
-			jta.append("성공 : 파일 읽기 : C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + myId + ".txt\n"+str+"<--str\n");
+			jta.append("성공 : 파일 읽기 : C:\\members\\" + myId + ".txt\n"+str+"<--str\n");
 			reader.close();
 			String token[]=str.split("/");
 			for(int zi=4;zi<token.length;zi++)
@@ -665,7 +673,7 @@ public class ServerThread implements Runnable {
 			jta.append("오류\n");
 		}
 	
-		File file2 = new File("C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + myId+ ".txt");
+		File file2 = new File("C:\\members\\" + myId+ ".txt");
 		FileWriter writer;
 		try {
 			writer = new FileWriter(file2);

@@ -20,7 +20,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 public class LoginUI extends JFrame {
-
+	ServerAddress sd;
 	FileReader reader;
 	String addr;
 	public JTextField idText;
@@ -32,6 +32,7 @@ public class LoginUI extends JFrame {
 	
 	public LoginUI(SixClient sixClient) {
 		setTitle("로그인");
+		sd = new ServerAddress(this);	// +IP주소 치는 창을 열어줌
 		this.client = sixClient;
 		loginUIInitialize();
 		
@@ -48,7 +49,8 @@ public class LoginUI extends JFrame {
 	}
 
 	private void loginUIInitialize() {
-		setBounds(760, 300, 335, 218);
+		setSize(335, 218);
+		setLocation(this.sd.getX(), this.sd.getY()+95);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(null);
 
@@ -71,7 +73,7 @@ public class LoginUI extends JFrame {
 		String recentId = null;
 		try		// +최근 로그인 아이디 읽어오기 try~catch문
 		{
-			reader = new FileReader("C:\\Users\\Park\\workspace\\MEW\\src\\members\\recent.txt");
+			reader = new FileReader("C:\\members\\recent.txt");
 			int read;
 
 			  char[] data = new char[50];
@@ -83,7 +85,7 @@ public class LoginUI extends JFrame {
 		}
 		catch(IOException e)
 		{
-			e.printStackTrace();
+			e.getMessage();
 		} 
 		
 		idText = new JTextField();
@@ -135,6 +137,21 @@ public class LoginUI extends JFrame {
 		});
 		signUpBtn.setBounds(149, 111, 97, 23);
 		panel.add(signUpBtn);
+		
+		JLabel lblNewLabel_2 = new JLabel("서버 IP 주소");
+		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel_2.setBounds(12, 10, 78, 15);
+		panel.add(lblNewLabel_2);
+
+		ipBtn = new JButton("IP 주소 입력");
+		ipBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				ServerAddress sd = new ServerAddress(LoginUI.this);
+				setVisible(false);
+			}
+		});
+		ipBtn.setBounds(93, 6, 180, 23);
+		panel.add(ipBtn);
 	}
 	
 	private void msgSummit() {

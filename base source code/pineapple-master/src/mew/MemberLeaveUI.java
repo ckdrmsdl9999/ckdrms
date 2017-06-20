@@ -70,7 +70,7 @@ public class MemberLeaveUI extends JFrame implements ActionListener {	// 회원 탈
 	public void actionPerformed(ActionEvent e){
 		if(e.getSource() == yes)	// 회원 탈퇴를 원하는 경우 생성된 회원 txt파일 삭제
 		{
-			String s = "C:\\Users\\Park\\workspace\\MEW\\src\\members\\" + client.getUser().getId() + ".txt";
+			String s = "C:\\members\\" + client.getUser().getId() + ".txt";
 			File f = new File(s);
 			if(f.delete())
 			{

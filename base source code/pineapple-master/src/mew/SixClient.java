@@ -19,7 +19,7 @@ public class SixClient implements Runnable {
 	private static String IP = ""; // 서버아이피주소
 	private Socket socket; // 소켓
 	private User user; // 사용자
-	private ArrayList<User> userArray;	// +유저 목록
+	private ArrayList<User> userArray;	// + 온라인 유저 목록
 
 	public LoginUI login;
 	public RestRoomUI restRoom;
@@ -88,7 +88,7 @@ public class SixClient implements Runnable {
 			// 소켓이 연결이 이루어지지 않은 경우에만 실행
 			// 즉, 처음 연결시에만 실행
 			socket = null;
-			IP = login.addr;	// +로그인 시 ip주소를 입력하지 않도록 해당 통신 서버의 ip를 받아옴
+			IP = login.ipBtn.getText();	// +로그인 시 ip주소를 입력하지 않도록 해당 통신 서버의 ip를 받아옴
 			try {
 				// 서버접속
 				InetSocketAddress inetSockAddr = new InetSocketAddress(
@@ -245,21 +245,19 @@ public class SixClient implements Runnable {
 	// 채팅방 내부 사용자 리스트
 	private void userList(String rNum, StringTokenizer token) {
 		for (int i = 0; i < user.getRoomArray().size(); i++) {
+			User tempUser = null;
 			if (Integer.parseInt(rNum) == user.getRoomArray().get(i).getRoomNum())
 			{
 				// 기존에 리스트가 있을 경우 지워줌
 				if (user.getRoomArray().get(i).getrUI().model != null)
 					user.getRoomArray().get(i).getrUI().model.removeAllElements();
-
 				while (token.hasMoreTokens()) {
 					// 아이디와 닉네임을 읽어서 유저 객체 하나를 생성
 					String id = token.nextToken();
 					String nick = token.nextToken();
 					String name = token.nextToken();
-					User tempUser = new User(id, nick, name);
-					
-					if(!userArray.contains(tempUser.getId()))
-						userArray.add(tempUser);
+					tempUser = new User(id, nick, name);
+
 					String rType = user.getRoomArray().get(i).getRoomType();	// 방 타입을 받아옴
 					if(rType.equals("일반"))	// +일반 채팅방일 경우	목록에 이름과 아이디가 뜨게하고
 						user.getRoomArray().get(i).getrUI().model.addElement(tempUser.toString());
@@ -267,32 +265,70 @@ public class SixClient implements Runnable {
 						user.getRoomArray().get(i).getrUI().model.addElement(tempUser.toNickNameString());
 				}
 			}
+			try
+			{
+				for(int j=0; j<userArray.size(); j++)	// 온라인 유저 목록에 없는 사용자 정보라면 추가
+				{
+					if(userArray.get(j).getId().equals(tempUser.getId()))
+						return;
+				}
+				userArray.add(tempUser);
+			}
+			catch(Exception e){	e.getMessage();}
 		}
 	}
 
 	// 선택한 채팅방의 사용자 리스트
 	private void selectedRoomUserList(StringTokenizer token) {
+		User tempUser = null;
 		// 서버로부터 유저리스트(채팅방)를 업데이트하라는 명령을 받음
 		if (!restRoom.level_2_1.isLeaf()) {
 			// 리프노드가 아니고, 차일드가 있다면 모두 지움
 			restRoom.level_2_1.removeAllChildren();
 		}
+
+		String rNum = token.nextToken();	// +방 번호도 넘겨줌
+		int roomNum = Integer.parseInt(rNum);
+		String roomType = "일반";
+		for(int i=0; i<getUser().getRoomArray().size(); i++)
+		{
+			if(getUser().getRoomArray().get(i).getRoomNum() == roomNum)
+			{
+				if(getUser().getRoomArray().get(i).getRoomType().equals("익명"))
+				{
+					roomType = "익명";
+				}
+			}
+		}
+		
 		while (token.hasMoreTokens()) {
 			// 아이디와 닉네임을 읽어서 유저 객체 하나를 생성
 			String id = token.nextToken();
 			String nick = token.nextToken();
 			String name = token.nextToken();
-			User tempUser = new User(id, nick, name);
-			if(!userArray.contains(tempUser.getId()))
-				userArray.add(tempUser);
+			tempUser = new User(id, nick, name);
 			// 채팅방 사용자노드에 추가
-			restRoom.level_2_1.add(new DefaultMutableTreeNode(tempUser.toString()));
+			if(roomType.equals("일반"))
+				restRoom.level_2_1.add(new DefaultMutableTreeNode(tempUser.toString()));	// 트리의 모델에 추가
+			else
+				restRoom.level_2_1.add(new DefaultMutableTreeNode(tempUser.toNickNameString()));	// +방 타입 별로 나눠줌
 		}
 		restRoom.userTree.updateUI();
+		try
+		{
+			for(int i=0; i<userArray.size(); i++)	// 온라인 유저 목록에 없는 사용자 정보라면 추가
+			{
+				if(userArray.get(i).getId().equals(tempUser.getId()))
+					return;
+			}
+			userArray.add(tempUser);
+		}
+		catch(Exception e){	e.getMessage();}
 	}
 
 	// 대기실 사용자 리스트
 	private void userList(StringTokenizer token) {
+		User tempUser = null;
 		// 서버로부터 유저리스트(대기실)를 업데이트하라는 명령을 받음
 		if (restRoom == null) {
 			return;
@@ -307,9 +343,7 @@ public class SixClient implements Runnable {
 			String id = token.nextToken();
 			String nick = token.nextToken();
 			String name = token.nextToken();
-			User tempUser = new User(id, nick, name);
-			if(!userArray.contains(tempUser.getId()))
-				userArray.add(tempUser);
+			tempUser = new User(id, nick, name);
 
 			for (int i = 0; i < restRoom.userArray.size(); i++) {
 				if (tempUser.getId().equals(restRoom.userArray.get(i))) {
@@ -323,7 +357,16 @@ public class SixClient implements Runnable {
 			restRoom.level_2_2.add(new DefaultMutableTreeNode(tempUser.toString()));
 		}
 		restRoom.userTree.updateUI();
-		
+		try
+		{
+			for(int i=0; i<userArray.size(); i++)	// 온라인 유저 목록에 없는 사용자 정보라면 추가
+			{
+				if(!userArray.get(i).getId().equals(tempUser.getId()))
+					return;
+			}
+			userArray.add(tempUser);
+		}
+		catch(Exception e){	e.getMessage();}
 		
 		if (restRoom == null) {//////////처음 로그인시친구목록트리 출력
 			return;
@@ -385,8 +428,7 @@ public class SixClient implements Runnable {
 		user.setId(id);	// +아이디 업데이트
 		user.setNickName(nick);
 		user.setName(name);
-		if(!userArray.contains(user.getId()))
-			userArray.add(user);
+		userArray.add(user);
 
 		// 로그인창 닫고 대기실창 열기
 		restRoom = new RestRoomUI(SixClient.this);

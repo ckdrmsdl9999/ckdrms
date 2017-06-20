@@ -10,7 +10,7 @@ public class Room {
 	private ArrayList<User> roomUserArray; // 채팅방에 접속한 사람들
 	private User maker; // 방장, 방만든사람
 	private RoomUI rUI; // 방 UI
-
+	
 	public Room() {
 		roomUserArray = new ArrayList<User>();
 	}

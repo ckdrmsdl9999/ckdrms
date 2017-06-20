@@ -18,6 +18,7 @@ public class RoomUI extends JFrame {
 	private textAndBackground tab;
 	//------------------------------------------------------------------//
 
+	public RestRoomUI restRoom;
 	public JTextArea chatArea;
 	public JTextField chatField;
 	public JList uList;
@@ -108,12 +109,35 @@ public class RoomUI extends JFrame {
 			}
 
 		});
-
+		
+		//+오목 버튼과 창 끄기 버튼(방에서 나가는 것과 다름) 추가
+		JButton btnOmok = new JButton();	// +오목 실행 버튼
+		btnOmok.setText("오목");
+		btnOmok.setBounds(324, 10, 40, 40);
+		btnOmok.setVisible(true);
+		btnOmok.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				OmokGame playOmok = new OmokGame(19);
+			}
+		});
+		getContentPane().add(btnOmok);
+		
+		JButton btnClose = new JButton();	// +창 닫기 버튼
+		btnClose.setText("닫기");
+		btnClose.setBounds(364, 10, 40, 40);
+		btnClose.setVisible(true);
+		btnClose.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				setVisible(false);	// 이 창을 꺼줌
+			}
+		});
+		getContentPane().add(btnClose);
+		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(UIManager
 				.getBorder("TitledBorder.border"), "참여자",
 				TitledBorder.CENTER, TitledBorder.TOP, null, null));
-		panel_2.setBounds(324, 10, 150, 358);
+		panel_2.setBounds(324, 50, 150, 350);
 		getContentPane().add(panel_2);
 		panel_2.setLayout(new BorderLayout(0, 0));
 
@@ -124,12 +148,10 @@ public class RoomUI extends JFrame {
 		model = (DefaultListModel) uList.getModel();
 	 
 		JPopupMenu pm = new JPopupMenu();	// +우클릭 시 나타날 팝업 메뉴 생성
-		JMenuItem infoItem = new JMenuItem("친구 정보");	// +팝업메뉴 아이템들
+		JMenuItem infoItem = new JMenuItem("사용자 정보");	// +팝업메뉴 아이템들
 	    JMenuItem friendAddItem = new JMenuItem("친구 추가");
-	    JMenuItem omokItem = new JMenuItem("오목 신청");
 	    pm.add(infoItem);
 	    pm.add(friendAddItem);
-	    pm.add(omokItem);
 	    
 	    uList.addMouseListener(new MouseAdapter() {	// +마우스 우클릭 시 팝업 메뉴 뜨기
             public void mouseClicked(MouseEvent e)
@@ -145,31 +167,50 @@ public class RoomUI extends JFrame {
         			if(y <= cal)
         			{
         				pm.show(uList, x, y);
-        				infoItem.addActionListener(new ActionListener(){	// 친구 정보 아이템 클릭 시
-        			    	public void actionPerformed(ActionEvent e1)
-        			    	{
-        			    		System.out.println(room.getUserArray());
-        			    		int selectedIndex = uList.getSelectedIndex();	// 리스트에서 선택한 개체의 인덱스
-        			    		if(uList.getSelectedValue().toString().equals("["+room.getUserArray().get(selectedIndex).getNickName()+"]"))
-        			    		{
-        			    			FriendInfo fi = new FriendInfo(room.getUserArray().get(selectedIndex));
-        			    			fi.setVisible(true);
-        			    		}
-        			    	}
-        			    });
-        			    
-        			    omokItem.addActionListener(new ActionListener(){
-        			    	public void actionPerformed(ActionEvent e3)
-        			    	{
-        			    		OmokGame omok = new OmokGame(19);
-        			    	}
-        			    });
         			}
         		}
             }
 	    });
 		scrollPane_1.setViewportView(uList);
 
+		infoItem.addActionListener(new ActionListener(){	// 친구 정보 아이템 클릭 시
+	    	public void actionPerformed(ActionEvent e1)
+	    	{
+	    		if(room.getRoomType().equals("익명"))
+	    			JOptionPane.showMessageDialog(null, "익명 채팅방에서는 할 수 없습니다.");
+	    		int selectedIndex = uList.getSelectedIndex();	// 리스트에서 선택한 개체의 인덱스
+	    		for(int i=0; i<client.getUserArray().size(); i++)
+	    	    {
+	    			if(uList.getSelectedValue().toString().equals(client.getUserArray().get(i).toString()))
+	    			{	// 해당 사용자가 존재하면
+	    				FriendInfo fi = new FriendInfo(client.getUserArray().get(i));
+	    				fi.setVisible(true);	// 친구 정보 보기
+	    				break;
+	    			}
+	    		}
+	    	}
+	    });
+		
+		friendAddItem.addActionListener(new ActionListener(){	// 친구 추가 아이템 클릭 시
+	    	public void actionPerformed(ActionEvent e1)
+	    	{
+	    		if(room.getRoomType().equals("익명"))
+	    			JOptionPane.showMessageDialog(null, "익명 채팅방에서는 할 수 없습니다.");
+	    		int selectedIndex = uList.getSelectedIndex();	// 리스트에서 선택한 개체의 인덱스
+	    		for(int i=0; i<client.getUserArray().size(); i++)
+	    	    {
+	    			if(uList.getSelectedValue().toString().equals(client.getUserArray().get(i).toString()))
+	    			{	// 해당 사용자가 존재하면
+	    				String friend = uList.getSelectedValue().toString();
+	    				restRoom.addFriend(friend);	// 친구 목록에 추가
+	    				break;
+	    			}
+	    		}
+	    	}
+		});
+		
+		
+		
 		JButton roomSendBtn = new JButton("보내기");
 		roomSendBtn.addActionListener(new ActionListener()
 		{
@@ -231,4 +272,21 @@ public class RoomUI extends JFrame {
 			}
 		}
 	}
+
+	/**
+	 * @return the restRoom
+	 */
+	public RestRoomUI getRestRoom() {
+		return restRoom;
+	}
+
+	/**
+	 * @param restRoom the restRoom to set
+	 */
+	public void setRestRoom(RestRoomUI restRoom) {
+		this.restRoom = restRoom;
+	}
+	
+	// +대기실 UI에 대한 getter, setter
+	
 }
