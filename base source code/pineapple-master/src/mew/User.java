@@ -15,6 +15,7 @@ public class User {
 	private ArrayList<String> friend=new ArrayList(10);//개개인의 친구목록 저장
 	private DataInputStream dis; // 입력스트림
 	private DataOutputStream dos; // 출력스트림
+	
 
 	// PROTOCOLs
 	public static final String LOGIN = "EI"; // 로그인
@@ -34,6 +35,11 @@ public class User {
 	public static final String ECHO01 = "MM"; // 대기실 채팅
 	public static final String ECHO02 = "ME"; // 채팅방 채팅
 	public static final String WHISPER = "MW"; // 귓속말
+	
+////문용 추가
+	public static final String ECHO03 = "MR";		//My room
+	public static final String ECHOBOT = "CB";		//챗봇용 코드
+////	
 
 	public static final String OMOK_INVITE = "OI";
 	public static final String FRIEND = "FR"; // 친구추가

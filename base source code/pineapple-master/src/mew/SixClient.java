@@ -176,7 +176,8 @@ public class SixClient implements Runnable {
 		case User.UPDATE_ROOM_USERLIST: // 채팅방 사용자 목록
 			// 방번호읽기
 			rNum = token.nextToken();
-			userList(rNum, token);
+			if(Integer.parseInt(rNum)!=0)	//문용 수정 나와의 채팅방일 경우 userList실행x
+				userList(rNum, token);
 			break;
 		case User.UPDATE_SELECTEDROOM_USERLIST: // 대기실에서 선택한 채팅방의 사용자 목록
 			selectedRoomUserList(token);
@@ -199,6 +200,18 @@ public class SixClient implements Runnable {
 			msg = token.nextToken();
 			echoMsgToRoom(rNum, msg);
 			break;
+	////////(문용, 추가) 
+			case User.ECHO03: // 채팅방 에코
+				rNum = token.nextToken();
+				msg = token.nextToken();
+				echoMsgToMyRoom(rNum, msg);
+				break;
+			case User.ECHOBOT:
+				rNum = token.nextToken();
+				msg = token.nextToken();
+				echoMsgToRoomWithBot(rNum, msg);				//echoMsg(방 넘버, 메시지)실행
+				break;
+		/////////	
 		case User.WHISPER: // 귓속말
 			id = token.nextToken();
 			nick = token.nextToken();
@@ -401,6 +414,11 @@ public class SixClient implements Runnable {
 			rType = token.nextToken();	// +rType 추가
 			int num = Integer.parseInt(rNum);
 
+	////////(문용, 수정) 나와의 채팅방
+				if(num == 0)
+				{continue;}
+	//////////
+			
 			// 라스트룸넘버를 업데이트 (최대값+1)
 			if (num >= restRoom.lastRoomNum) {
 				restRoom.lastRoomNum = num + 1;
@@ -484,7 +502,22 @@ public class SixClient implements Runnable {
 			}
 		}
 	}
-
+	//////////문용, 추가
+	private void echoMsgToMyRoom(String rNum, String msg) {	
+		for (int i = 0; i < user.getRoomArray().size(); i++) {
+			if (Integer.parseInt(rNum) == user.getRoomArray().get(i).getRoomNum()) {
+				// 사용자 -> 방배열 -> 유아이 -> 텍스트에어리어
+				// 커서 위치 조정
+				user.getRoomArray().get(i).getmrUI().chatArea
+						.setCaretPosition(user.getRoomArray().get(i).getmrUI().chatArea
+								.getText().length());
+				// 에코<실제 방에 메시지 전달하는 역할>
+				user.getRoomArray().get(i).getmrUI().chatArea.append(msg + "\n");
+			}
+		}
+	}
+	///////////
+	
 	
 	private void friendList(String friendaddarray) {
 		user.getfriendArray().add(friendaddarray);
@@ -502,6 +535,25 @@ public class SixClient implements Runnable {
 		int ko=user.getfriendArray().size()-1;
 		restRoom.friendTree.updateUI();
 	}
+	
+//////////(문용, 추가) 	chatBot이 대답하는  코드
+private void echoMsgToRoomWithBot(String rNum, String msg) {			//방번호와, 입력받은 메시지
+	for (int i = 0; i < user.getRoomArray().size(); i++) {
+		if (Integer.parseInt(rNum) == user.getRoomArray().get(i)
+				.getRoomNum()) {
+
+			// 사용자 -> 방배열 -> 유아이 -> 텍스트에어리어
+			// 커서 위치 조정
+			user.getRoomArray().get(i).getmrUI().chatArea
+					.setCaretPosition(user.getRoomArray().get(i).getmrUI().chatArea
+							.getText().length());
+			// 에코<실제 방에 메시지 전달하는 역할>
+			user.getRoomArray().get(i).getmrUI().chatArea.append(msg + "\n");
+		}
+	}
+}
+///////
+
 	
 	// getter, setter
 	public static int getPORT() {
