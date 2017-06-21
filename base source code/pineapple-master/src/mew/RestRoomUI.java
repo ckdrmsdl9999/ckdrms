@@ -13,23 +13,18 @@ import javax.swing.tree.*;
 public class RestRoomUI extends JFrame implements ActionListener {
 
 	public int lastRoomNum = 1;
-	public JButton makeRoomBtn, makeAnonymousRoomBtn, makeNormalRoomBtn, getInRoomBtn, sendBtn,friendBtn;
+	public int myRoomNum = 0;
+	public JButton makeRoomBtn, makeAnonymousRoomBtn, makeMyRoomBtn, getInRoomBtn, whisperBtn, sendBtn,friendBtn;
 	public JTree userTree;
-	public JTree friendTree;	//친구목록트리
+	public JTree friendTree;//친구목록트리!!
 	public JList roomList;
+	public Room[] roomArray;	//+방 객체들의 목록
 	public JTextField chatField;
 	public JTextArea restRoomArea;
 	public JLabel lb_id, lb_nick, lb_name;
 	public JTextField lb_ip;
 
 	private SixClient client;
-	//------------------------------------------------------------------//
-	// 변경된 설정값을 전달할 때 필요한 참조 변수 tab
-	private textAndBackground tab;
-	//------------------------------------------------------------------//
-	// 설정창
-	public Settings settings;
-	//------------------------------------------------------------------//
 	public ArrayList<User> userArray; // 사용자 목록 배열
 	public String currentSelectedTreeNode;
 	public DefaultListModel model;
@@ -41,26 +36,21 @@ public class RestRoomUI extends JFrame implements ActionListener {
 	public DefaultMutableTreeNode level21;
 	public DefaultMutableTreeNode level22;
 	public DefaultMutableTreeNode level2;
-	
+	public int width = 100, height = 10;
 	
 	public RestRoomUI(SixClient sixClient) 
 	{
 		setTitle("대기실");
-		JDialog.setDefaultLookAndFeelDecorated(true);
-
 		userArray = new ArrayList<User>();
-		//------------------------------------------------------------------//
-		// 참조 변수에 생성된 객체의 주소 값 대입
-		tab = new textAndBackground();
-		//------------------------------------------------------------------//
 		client = sixClient;
 		initialize();
 	}
 
 	private void initialize() 
 	{
-		setSize(700, 500);
+		setBounds(100, 100, 700, 500);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		// 대기실 창을 끄면 열려있는 연결된 모든 창이 꺼짐
+
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 
@@ -71,14 +61,6 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		JMenuItem changeNickItem = new JMenuItem("닉네임 변경");
 		changeNickItem.addActionListener(this);
 		basicMenus.add(changeNickItem);
-		
-		//-----------------------------------------------------------------//
-	    //  설정변경목록 추가
-	    JMenuItem settingItem = new JMenuItem("\uC124\uC815 \uBCC0\uACBD");
-	    settingItem.addActionListener(this);
-	    basicMenus.add(settingItem);
-	    getContentPane().setLayout(null);
-	    //----------------------------------------------------------------//
 
 		JMenuItem exitItem = new JMenuItem("끝내기");
 		exitItem.addActionListener(this);
@@ -95,7 +77,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 
 		JPanel room = new JPanel();
 		room.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "채팅방",TitledBorder.CENTER, TitledBorder.TOP, null, null));
-		room.setBounds(12, 10, 477, 215);
+		room.setBounds(12, 10, 485, 215);
 		getContentPane().add(room);
 		room.setLayout(new BorderLayout(0, 0));
 
@@ -104,6 +86,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 
 		// 리스트 객체와 모델 생성
 		roomList = new JList(new DefaultListModel());
+		roomList.setPreferredSize(new Dimension(width, height));
 		roomList.addMouseListener(new MouseAdapter() 
 		{
 			@Override
@@ -130,7 +113,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		JPanel panel_2 = new JPanel();
 		room.add(panel_2, BorderLayout.SOUTH);
 
-		makeRoomBtn = new JButton("일반 채팅방 만들기");	// +일반 채팅방 생성
+		makeRoomBtn = new JButton("일반 채팅방");	// +일반 채팅방 생성
 		makeRoomBtn.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e) { }
@@ -145,7 +128,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 			}
 		});
 		
-		makeAnonymousRoomBtn = new JButton("익명 채팅방 만들기");	// +익명 채팅방 생성
+		makeAnonymousRoomBtn = new JButton("익명 채팅방");	// +익명 채팅방 생성
 		makeAnonymousRoomBtn.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e) { }
@@ -160,14 +143,35 @@ public class RestRoomUI extends JFrame implements ActionListener {
 			}
 		});
 		
-		makeRoomBtn.setSize(250, 50);
-		makeAnonymousRoomBtn.setSize(250, 50);
+		makeRoomBtn.setSize(100, 50);
+		makeAnonymousRoomBtn.setSize(100, 50);
 		
 		panel_2.add(makeRoomBtn);
 		panel_2.add(makeAnonymousRoomBtn);
-
-		getInRoomBtn = new JButton("방 입장하기");
-		getInRoomBtn.setSize(250, 50);
+		
+//////////////////(문용, 나와의 채팅방)			
+		JButton makeMyRoomBtn = new JButton("나와의 채팅");
+		makeMyRoomBtn.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {// 방만들기 버튼 클릭
+				myRoomNum = 0;
+				createMyRoom();		//방만들기
+			}
+		});
+		panel_2.add(makeMyRoomBtn);
+///////
+		
+				getInRoomBtn = new JButton("들어가기");
+				panel_2.add(getInRoomBtn);
+				getInRoomBtn.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+					}
+				});
+				getInRoomBtn.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+					}
+				});
+				getInRoomBtn.setSize(250, 50);
 		getInRoomBtn.addMouseListener(new MouseAdapter() 
 		{
 			@Override
@@ -177,7 +181,6 @@ public class RestRoomUI extends JFrame implements ActionListener {
 				getIn();
 			}
 		});
-		panel_2.add(getInRoomBtn);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 		JPanel user = new JPanel();
@@ -209,21 +212,30 @@ public class RestRoomUI extends JFrame implements ActionListener {
 
 		scrollPane_1.setViewportView(userTree);
 
-		userTree.addMouseListener(new MouseAdapter()	// + 유저 트리에서 마우스 오른쪽 버튼으로 클릭 시
-		{
-			public void mousePressed(MouseEvent event)
-			{
-				if(((event.getModifiers() & InputEvent.BUTTON3_MASK ) != 0) && (userTree.getSelectionCount() > 0))
-				{
-					showMenuToUserTree(event.getX(), event.getY());
-				}
-			}
-		});
+
+			
 		
 		
 		JPanel panel_1 = new JPanel();
 		user.add(panel_1, BorderLayout.SOUTH);
 		panel_1.setLayout(new GridLayout(1, 0, 0, 0));
+
+		whisperBtn = new JButton("귓속말");
+		whisperBtn.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(MouseEvent arg0) 
+			{
+				StringTokenizer token = new StringTokenizer(currentSelectedTreeNode, "("); // 토큰 생성
+				String temp = token.nextToken(); // 토큰으로 분리된 스트링
+				temp = token.nextToken();
+
+				// 닉네임 제외하고 아이디만 따옴
+				chatField.setText("/" + temp.substring(0, temp.length() - 1)+ " ");
+				chatField.requestFocus();
+			}
+		});
+		panel_1.add(whisperBtn);
 
 		JPanel restroom = new JPanel();
 		restroom.setBorder(new TitledBorder(UIManager
@@ -241,7 +253,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		panel.add(scrollPane_4);
 
 		chatField = new JTextField();
-		
+
 		chatField.addKeyListener(new KeyAdapter() 
 		{
 			@Override
@@ -254,7 +266,6 @@ public class RestRoomUI extends JFrame implements ActionListener {
 			}
 		});
 		scrollPane_4.setViewportView(chatField);
-		chatField.setToolTipText("'/'키와 상대 유저의 id를 입력하고 말하면 귓속말 대화가 가능합니다. ex) /james 안녕하세요! ");	// +툴팁 추가
 		chatField.setColumns(10);
 
 		sendBtn = new JButton("보내기");
@@ -275,7 +286,6 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		restRoomArea = new JTextArea();
 		restRoomArea.setBackground(new Color(224, 255, 255));
 		restRoomArea.setEditable(false);
-		restRoomArea.setToolTipText("'/'키와 상대 유저의 id를 입력하고 말하면 귓속말 대화가 가능합니다. ex) /james 안녕하세요! ");	// +툴팁 추가
 		scrollPane_2.setViewportView(restRoomArea);
 		
 ///////////////////////////////////////////////////////////////////////친구목록트리/////
@@ -289,38 +299,48 @@ public class RestRoomUI extends JFrame implements ActionListener {
 				TitledBorder.TOP, null, null));
 		JScrollPane scrollPane_9 = new JScrollPane();
 		panel9.add(scrollPane_9, BorderLayout.CENTER);
+//////////////////////////////////////////////////친구추가버튼
 		JPanel addfriendpannel = new JPanel();
 		panel9.add(addfriendpannel, BorderLayout.SOUTH);
 		addfriendpannel.setLayout(new GridLayout(1, 0, 0, 0));
 		
+		friendBtn = new JButton("친구추가");
+		friendBtn.setSize(50, 50);
+		friendBtn.addMouseListener(new MouseAdapter() 
+		{
+			@Override
+			public void mouseClicked(MouseEvent arg0)
+			{
+				
+				addFriend();
+			}
+		});
+		addfriendpannel.add(friendBtn);
+
+
+		///////////////////////////////////////////////
 		
-		friendTree = new JTree();	// 친구 목록  트리
+		friendTree = new JTree();
 		friendTree.addTreeSelectionListener(new TreeSelectionListener() {
 
 			public void valueChanged(TreeSelectionEvent arg0) {
-				currentSelectedTreeNode = arg0.getPath().getLastPathComponent().toString();
+
+				currentSelectedTreeNode = arg0.getPath().getLastPathComponent()
+
+						.toString();
+
 			}
+
 		});
-		level1 = new DefaultMutableTreeNode("친구 목록");
+		level1 = new DefaultMutableTreeNode("친구목록");
 		DefaultTreeModel model2 = new DefaultTreeModel(level1);
 		friendTree.setModel(model2);
 		
 		scrollPane_9.setViewportView(friendTree);
 
-		friendTree.addMouseListener(new MouseAdapter()	// + 친구목록 트리에서 마우스 오른쪽 버튼으로 클릭 시
-		{
-			public void mousePressed(MouseEvent event)
-			{
-				if(((event.getModifiers() & InputEvent.BUTTON3_MASK ) != 0) && (friendTree.getSelectionCount() > 0))
-				{
-					showMenuToFriendTree(event.getX(), event.getY());
-				}
-			}
-		});
-
 		JPanel panel_9 = new JPanel();
-		panel9.add(panel_9, BorderLayout.NORTH);
-		panel_9.setLayout(new GridLayout(1, 0, 0, 0));
+	panel9.add(panel_9, BorderLayout.NORTH);
+	panel_9.setLayout(new GridLayout(1, 0, 0, 0));
 	///////////////////////////////////////////////////////////
 		
 //////////////////////////////////////////내정보부분 안나타나게함
@@ -398,25 +418,12 @@ public class RestRoomUI extends JFrame implements ActionListener {
 			maker();
 			System.out.println("토스트");
 			break;
-		//------------------------------------------------------------------//   
-		// 설정 변경 이벤트
-		case "설정 변경":
-		    settings = new Settings(tab, client);
-			settings.setLocationRelativeTo(this);	// 상대경로 설정
-		    break;   
-		//------------------------------------------------------------------//
 		}
 	}
 
 	private void changeNick() 
 	{
-		String temp = JOptionPane.showInputDialog(this, "변경할 닉네임을 입력하세요.", "");
-		if(temp.equals(client.getUser().getNickName()))	//+동일한 닉네임으로 변경했을 때
-		{
-			System.out.println("닉네임 변경 실패");
-			JOptionPane.showMessageDialog(null, "기존의 닉네임과 다른 닉네임을 입력해주세요.", "에러 메시지", JOptionPane.INFORMATION_MESSAGE);	// 에러창 띄움
-			return;
-		}
+		String temp = JOptionPane.showInputDialog(this, "변경할 닉네임을 입력하세요.", "닉네임 변경");
 		if (temp != null && !temp.equals("")) 
 		{
 			try 
@@ -425,14 +432,8 @@ public class RestRoomUI extends JFrame implements ActionListener {
 			} 
 			catch (IOException e) 
 			{
-				System.out.println("닉네임 변경 실패");
 				e.printStackTrace();
 			}
-		}
-		else
-		{
-			JOptionPane.showMessageDialog(null, "닉네임을 한 글자 이상 입력해주세요.", "에러 메시지", JOptionPane.INFORMATION_MESSAGE);	// 에러창 띄움
-			return;
 		}
 	}
 
@@ -440,55 +441,23 @@ public class RestRoomUI extends JFrame implements ActionListener {
 	{
 		// 메시지전송
 		String string = chatField.getText();
-		
+
 		if (!string.equals("")) 
 		{
 			if (string.substring(0, 1).equals("/")) 
 			{
-				
-				StringTokenizer token = new StringTokenizer(string, " "); // 토큰 생성
-				String id=null, msg=null;
-				try
-				{
-					id = token.nextToken(); // 토큰으로 분리된 스트링
-					msg = token.nextToken();
-				}
-				catch(Exception e)
-				{ }	// +토큰 자체가 존재하지 않을 때
-				id = id.replace("/", "");	// + '/'를 빼줌
+				StringTokenizer token = new StringTokenizer(string, " "); // 토큰																			// 생성
+				String id = token.nextToken(); // 토큰으로 분리된 스트링
+				String msg = token.nextToken();
 
-				if(id.equals(client.getUser().getId()))
-				{
-					System.out.println("자신에게는 귓속말할 수 없습니다.");
-					JOptionPane.showMessageDialog(null, "자신에게는 귓속말할 수 없습니다.", "에러 메시지", JOptionPane.INFORMATION_MESSAGE);	// 에러창 띄움
-					return;
-				}
-				
-				boolean flag = false;	// +대상이 온라인인지 확인하는 플래그
-				for(int i=0; i<client.getUserArray().size(); i++)
-				{
-					if(client.getUserArray().get(i).getId().equals(id))
-					{
-						flag = true;
-					}
-				}
-				
-				if(!flag)	// +대상이 존재하지 않을 때
-				{
-					System.out.println("존재하는 아이디가 아니거나 접속 중인 유저가 아닙니다.");
-					JOptionPane.showMessageDialog(null, "존재하는 아이디가 아니거나 접속 중인 유저가 아닙니다.", "에러 메시지", JOptionPane.INFORMATION_MESSAGE);	// 에러창 띄움
-					return;
-				}
-				else System.out.println("대상 존재 확인");
-				
 				try 
 				{
-					client.getDos().writeUTF(User.WHISPER + "/" + id + "/" + msg);
-					restRoomArea.append("("+id+")" + "님에게 : " + msg + "\n");
+					client.getDos().writeUTF(User.WHISPER + id + "/" + msg);
+					restRoomArea.append("("+id+")" + "님에게 귓속말 : " + msg + "\n");
 				}
 				catch (IOException e) 
 				{
-					e.getMessage();
+					e.printStackTrace();
 				}
 				chatField.setText("");
 			} 
@@ -501,7 +470,7 @@ public class RestRoomUI extends JFrame implements ActionListener {
 				} 
 				catch (IOException e) 
 				{
-					e.getMessage();
+					e.printStackTrace();
 				}
 				chatField.setText("");
 			}
@@ -520,88 +489,13 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		}
 	}
 
-	public void showMenuToUserTree(int x, int y)	// +접속 중인 사용자 목록을 오른쪽 마우스로 클릭했을 때 나오는 팝업
-	{
-		JPopupMenu popup = new JPopupMenu();	// 메뉴아이템 팝업 생성
-	    JMenuItem friendAddItem = new JMenuItem("친구 추가");	// 친구 추가 메뉴 아이템 생성
-	    popup.add(friendAddItem);
-
-	    friendAddItem.addActionListener(new ActionListener()
-	    {	// + 친구 추가 버튼 클릭 시
-	    	public void actionPerformed(ActionEvent e1)
-	    	{
-	    		String friend = null;
-	    		
-	    		for(int i=0; i<client.getUserArray().size(); i++)
-	    	    {
-	    	    	if(client.getUserArray().get(i).toString().equals(userTree.getLastSelectedPathComponent().toString()))
-	    	    	{
-	    	    		friend = client.getUserArray().get(i).toString();
-	    	    	}
-	    	    }
-	    		
-	    		for(int i=0; i<friendTree.getComponentCount(); i++)
-	    		{
-	    			if(client.getUser().toString().equals(friend))
-	    			{
-	    				System.out.println("자신은 친구로 추가할 수 없습니다.");
-	    				JOptionPane.showMessageDialog(null, "자신은 친구로 추가할 수 없습니다.", "에러 메시지", JOptionPane.INFORMATION_MESSAGE);	// 에러창 띄움
-	    				return;
-	    			}
-	    			else if(client.getUser().getfriendArray().contains(friend))	// friendArray에 이미 있거나 자신의 아이디일 때
-	    			{
-	    				System.out.println("이미 등록되어 있는 친구");
-	    				JOptionPane.showMessageDialog(null, "이미 등록되어 있는 친구입니다.", "에러 메시지", JOptionPane.INFORMATION_MESSAGE);	// 에러창 띄움
-	    				return;
-	    			}
-	    		}
-	    		try {
-	    			client.getDos().writeUTF(User.FRIEND + "/"+ client.getUser().getId() + "/" + friend);
-	    		} catch (IOException e) {
-	    			e.printStackTrace();
-	    		}
-	    	}
-	    });	 
-		
-		popup.show(userTree, x, y);
-	}
-	
-	public void showMenuToFriendTree(int x, int y)	// +친구 목록을 오른쪽 마우스로 클릭했을 때 나오는 팝업
-	{
-		JPopupMenu popup = new JPopupMenu();
-		JMenuItem infoItem = new JMenuItem("친구 정보");
-	    popup.add(infoItem);
-	    
-	    infoItem.addActionListener(new ActionListener()
-	    {	// +친구 정보 아이템 클릭 시
-	    	public void actionPerformed(ActionEvent e1)
-	    	{
-	    		for(int i=0; i<client.getUserArray().size(); i++)
-	    		{
-	    			if(client.getUserArray().get(i).toString().equals(friendTree.getLastSelectedPathComponent().toString()))
-	    			{	 				
-	    				FriendInfo fi = new FriendInfo(client.getUserArray().get(i));	// 유저 목록을 얻어와서 목록 안에 클릭한 개체가 들어있을 경우 친구 정보 출력
-	    				fi.setLocationRelativeTo(friendTree);	// 상대위치 지정
-	    				fi.setVisible(true);
-	    				break;
-	    			}
-	    		}
-	    	}
-	    });
-		popup.show(friendTree, x, y);
-	}
-	
 	private void createRoom(String roomName) 
 	{
 		Room newRoom = new Room(roomName); // 방 객체 생성
 		newRoom.setRoomNum(lastRoomNum);
 		newRoom.setRoomType("일반");
-		//------------------------------------------------------------------//
-	    // 설정 값을 전달할 참조 변수를 파라미터로 추가
-	    newRoom.setrUI(new RoomUI(client, newRoom, tab)); // UI
-	    //------------------------------------------------------------------//
-	    newRoom.getrUI().setLocationRelativeTo(this.chatField);	// 상대경로 지정
-	    
+		newRoom.setrUI(new RoomUI(client, newRoom)); // UI
+
 		// 클라이언트가 접속한 방 목록에 추가
 		client.getUser().getRoomArray().add(newRoom);
 		try
@@ -619,12 +513,8 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		Room newRoom = new Room(roomName); // 방 객체 생성
 		newRoom.setRoomNum(lastRoomNum);
 		newRoom.setRoomType("익명");
-		//------------------------------------------------------------------//
-	    // 설정 값을 전달할 참조 변수를 파라미터로 추가
-	    newRoom.setrUI(new RoomUI(client, newRoom, tab)); // UI
-	    //------------------------------------------------------------------//
-		newRoom.getrUI().setLocationRelativeTo(this.chatField);	// 상대경로 지정
-
+		newRoom.setrUI(new RoomUI(client, newRoom)); // UI
+		
 		// 클라이언트가 접속한 방 목록에 추가
 		client.getUser().getRoomArray().add(newRoom);
 
@@ -637,7 +527,31 @@ public class RestRoomUI extends JFrame implements ActionListener {
 			e.printStackTrace();
 		}
 	}
+////////
+	//(문용, 수정) 대기실 목록에 만들어진 방 추가하지 않기
 	
+		private void createMyRoom() {		//createRoom 메소드
+			String roomname = "나와의 채팅방";		//방이름
+			Room myRoom = new Room(roomname); // 방 객체 생성.		
+			myRoom.setRoomNum(myRoomNum);			//Room의 setRoomNum메소드 확인, 내 방은 방번호 0
+			myRoom.setRoomType("독백");
+			myRoom.setmrUI(new MyRoomUI(client, myRoom)); // RoomUI생성 후 client와 newRoom을 매개변수로 전달.
+
+			// 클라이언트의 myRoom만들기
+			client.getUser().getRoomArray().add(myRoom);		//내 방 만들어서 RestRoomUI의 객체 myRoom에 전달
+			//		//client 객체 내 getuser()메소드 실행
+													//user.getRoomArray()메소드 실행.
+													//arrayList<Room>에 새로운 방을 add한다. newRoom은 방금 만들어진 방이다.
+
+			try { 
+				client.getDos().writeUTF(			//client객체에서 getdos()호출, DataOutPutStream.writeUTF()실행
+				User.CREATE_ROOM + "/" + myRoom.toProtocol());	//DataOutPutStream.writeUTF는 서버에 ()내 문자열을 보낸다.
+			} catch (IOException e) {							//보내는 메시지 : myRoom/roomNum/roomName
+				e.printStackTrace();							//serverThread의 readUTF로 읽음
+			}
+		}
+		//(문용, 추가)여기까지
+///////	
 	private void getIn() 
 	{
 		// 선택한 방 정보
@@ -658,12 +572,8 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		Room theRoom = new Room(rName); // 방 객체 생성
 		theRoom.setRoomNum(Integer.parseInt(rNum)); // 방번호 설정
 		theRoom.setRoomType(rType);	// +방 타입 설정
-		//------------------------------------------------------------------//
-	    // 설정 값을 전달할 참조 변수를 파라미터로 추가
-		theRoom.setrUI(new RoomUI(client, theRoom, tab)); // UI
-		//------------------------------------------------------------------//
-	    theRoom.getrUI().setLocationRelativeTo(this.chatField);	// 상대경로 지정
-
+		theRoom.setrUI(new RoomUI(client, theRoom)); // UI
+		
 		// 클라이언트가 접속한 방 목록에 추가
 		client.getUser().getRoomArray().add(theRoom);
 
@@ -684,20 +594,28 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		maker.setTitle("프로그램 정보");
 		maker.getContentPane().add(m);
 		maker.setSize(400, 170);
-		maker.setLocationRelativeTo(this);
 		maker.setVisible(true);
+		maker.setLocation(400, 350);
 		maker.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	}
-	
 	private void addFriend() {/////serverThread로 보내는 내용
+
 		String friend = "";
 		friend=chatField.getText();
+		
+
 
 		try {
-			client.getDos().writeUTF(User.FRIEND + "/"+client.getUser().getId()+"/"+ friend);
+
+			client.getDos().writeUTF(
+					User.FRIEND + "/"+client.getUser().getId()+"/"+ friend);
+
 		} catch (IOException e) {
+
 			e.printStackTrace();
+
 		}
+
 	}
 }
 
@@ -713,59 +631,12 @@ class Maker extends JPanel {
 	{
 		this.setLayout(new GridLayout(3, 1));
 
-		//------------------------------------------------------------------//
-	    // 프로그램 정보 수정
-	    JLabel j1 = new JLabel("       프로그램 제작자 : 동국대학교 공개 SW 프로젝트 - 4조");
-	    JLabel j2 = new JLabel("       수정한 사람 : 윤창근, 허문용, 박지용, 이해준");
-	    JLabel j3 = new JLabel("       프로그램 버전 : 1.7v  ( 17 . 6 . 18 )");
-	    //------------------------------------------------------------------//
+		JLabel j1 = new JLabel("       프로그램 제작자 : 청년취업아카데미");
+		JLabel j2 = new JLabel("       수정한 사람 : CBNU");
+		JLabel j3 = new JLabel("       프로그램 버전 : 1.0v  ( 13 . 8 . 29 )");
 
 		this.add(j1);
 		this.add(j2);
 		this.add(j3);
-	}
-}
-
-//친구 정보 팝업 클래스
-class FriendInfo extends JDialog{
-	JLabel lblName, lblId, lblNickName;
-	JTextField txtName, txtId, txtNickName;
-	
-	public FriendInfo(User user)
-	{
-		lblName = new JLabel("이름");		// 이름 레이블
-		lblName.setBounds(20, 20, 50, 30);
-		
-		txtName = new JTextField();	// 이름 텍스트 필드
-		txtName.setText(user.getName());
-		txtName.setBounds(80, 20, 100, 30);
-		txtName.setEditable(false);	// 읽기 전용으로 설정(수정 불가)
-		
-		lblId = new JLabel("아이디");	// 아이디 레이블
-		lblId.setBounds(20, 60, 50, 30);
-		
-		txtId = new JTextField();	// 아이디 텍스트 필드
-		txtId.setText(user.getId());
-		txtId.setBounds(80, 60, 100, 30);
-		txtId.setEditable(false);	// 읽기 전용으로 설정(수정 불가)
-		
-		lblNickName = new JLabel("닉네임");	// 닉네임 레이블
-		lblNickName.setBounds(20, 100, 50, 30);
-		
-		txtNickName = new JTextField();	// 닉네임 텍스트 필드
-		txtNickName.setText(user.getNickName());
-		txtNickName.setBounds(80, 100, 100, 30);
-		txtNickName.setEditable(false);	// 읽기 전용으로 설정(수정 불가)
-			
-		this.add(lblName);
-		this.add(lblId);
-		this.add(lblNickName);
-		this.add(txtName);
-		this.add(txtId);
-		this.add(txtNickName);
-		this.setTitle("친구 정보");
-		this.setSize(200, 200);
-		this.setLayout(null);
-		this.setModal(true);
 	}
 }

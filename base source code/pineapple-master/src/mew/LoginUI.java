@@ -8,7 +8,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 
-import javax.swing.JPasswordField;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -24,7 +23,7 @@ public class LoginUI extends JFrame {
 	FileReader reader;
 	String addr;
 	public JTextField idText;
-	public JPasswordField pwText;
+	public JTextField pwText;
 	public JButton loginBtn, signUpBtn;
 	public MemberUI mem;
 	public JButton ipBtn;
@@ -48,7 +47,7 @@ public class LoginUI extends JFrame {
 	}
 
 	private void loginUIInitialize() {
-		setBounds(760, 300, 335, 218);
+		setBounds(100, 100, 335, 218);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(null);
 
@@ -71,7 +70,7 @@ public class LoginUI extends JFrame {
 		String recentId = null;
 		try		// +최근 로그인 아이디 읽어오기 try~catch문
 		{
-			reader = new FileReader("C:\\Users\\Park\\workspace\\MEW\\src\\members\\recent.txt");
+			reader = new FileReader("g:\\recent.txt");
 			int read;
 
 			  char[] data = new char[50];
@@ -92,7 +91,7 @@ public class LoginUI extends JFrame {
 		panel.add(idText);
 		idText.setColumns(10);
 
-		pwText = new JPasswordField();
+		pwText = new JTextField();
 		pwText.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -130,7 +129,6 @@ public class LoginUI extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				// 회원가입
 				mem = new MemberUI(client);
-				mem.setLocationRelativeTo(signUpBtn);
 			}
 		});
 		signUpBtn.setBounds(149, 111, 97, 23);

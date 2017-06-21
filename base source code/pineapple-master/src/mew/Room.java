@@ -10,6 +10,8 @@ public class Room {
 	private ArrayList<User> roomUserArray; // 채팅방에 접속한 사람들
 	private User maker; // 방장, 방만든사람
 	private RoomUI rUI; // 방 UI
+	///(문용, 추가)
+	private MyRoomUI mrUI; // 방 UI
 
 	public Room() {
 		roomUserArray = new ArrayList<User>();
@@ -71,6 +73,14 @@ public class Room {
 
 	public void setrUI(RoomUI rUI) {
 		this.rUI = rUI;
+	}
+	
+	public MyRoomUI getmrUI() {
+		return mrUI;
+	}
+
+	public void setmrUI(MyRoomUI mrUI) {
+		this.mrUI = mrUI;			
 	}
 
 }

@@ -1,4 +1,4 @@
-package mew;
+package Chat;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -14,7 +14,7 @@ public class OmokGui extends JFrame{
 
 	public OmokGui(int gLineNum, OmokGame game) {
 		// TODO Auto-generated constructor stub
-		super("1대1 오목 게임");
+		super("NeOP's Super Awesome Omok Game");
 		setLayout(new BorderLayout());
 
 		this.game = game;
@@ -30,8 +30,8 @@ public class OmokGui extends JFrame{
 	}
 
 	public void put(int x, int y){
-		gameBoard.put(x, y);
-    }
+    gameBoard.put(x, y);
+  }
 
 	public void gameEnd(){
 		System.out.println("Game End");
