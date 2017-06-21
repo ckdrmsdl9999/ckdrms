@@ -46,11 +46,11 @@ public class OmokGame{
 		start = true;
 	}
 
-	public OmokGame(int lineNum, boolean host, int portNum)
+	public OmokGame(int lineNum, boolean host, int portNum, String ipNum)
 	{//for future multimode
 		start = false;
 		dataInit(lineNum);
-		socketInit(host, portNum);
+		socketInit(host, portNum, ipNum);
 		gameGui = new OmokGui(lineNum, this);
 		start = true;
 		if(!solo && !myTurn)
@@ -86,14 +86,14 @@ public class OmokGame{
 		}
 		else	// 게임을 참가한 쪽이 클라이언트가 됨
 		{
+			String ipNum = JOptionPane.showInputDialog("Enter ServerIP");
 			String portNum = JOptionPane.showInputDialog("Enter portNum");
-			System.out.println("포트번호2 :" + portNum);
-			mySocket.beClient(Integer.parseInt(portNum));
+			mySocket.beClient(ipNum, Integer.parseInt(portNum));
 			myTurn = false;
     	}
 	}
 
-	private void socketInit(boolean host, int portNum)
+	private void socketInit(boolean host, int portNum, String ipNum)
 	{		
 		mySocket = new OmokSocket();
 		if(host)
@@ -103,7 +103,7 @@ public class OmokGame{
 		}
 		else
 		{
-			mySocket.beClient(portNum);	
+			mySocket.beClient(ipNum, portNum);	
 			myTurn = false;
 		}
 	}
@@ -256,50 +256,4 @@ public class OmokGame{
 	{
 		return end;
 	}
-	
-	// 객체를 보내는 메소드
-	public void sendObject(int portNum) 
-	{ 
-		
-		FileOutputStream fos = null;	 // ObjectOutputStream 을 이용한 객체 파일 저장 
-		ObjectOutputStream oos = null; 
-		try
-		{ 
-			fos = new FileOutputStream("C:\\members\\object.dat"); 
-			oos = new ObjectOutputStream(fos); 	// 아웃풋 스트림 생성 
-
-			oos.writeObject(portNum);	 // 파일에 순차적으로 객체를 써줌
-		
-			System.out.println("객체를 저장했습니다."); 
-		}
-		catch(Exception e){ e.printStackTrace(); }
-		finally
-		{ 
-			if(fos != null) try{fos.close();}catch(IOException e){} 
-			if(oos != null) try{oos.close();}catch(IOException e){}	 // 스트림 닫기
-		} 
-	} 
-	
-	// 객체를 받는 메소드
-	public int receiveObject() 
-	{ 
-		FileInputStream fis = null;
-	 	ObjectInputStream ois = null;
-	 	
-	 	int portNum = 0;
-		try
-		{ 	 
- 			fis = new FileInputStream("C:\\members\\object.dat"); 
-	 		ois = new ObjectInputStream(fis); 	// 객체를 읽어오는 인풋스트림 생성
-	 			 
-	 		portNum = (int)(ois.readObject());	// 객체를 읽어옴
-	 	}
-		catch(Exception e){ e.printStackTrace(); }
-		finally
-		{ 
-	 		if(fis != null) try{fis.close();}catch(IOException e){} 
-	 		if(ois != null) try{ois.close();}catch(IOException e){}		// 스트림 닫기 
-	 		return portNum;
-	 	} 
- 	} 
 }

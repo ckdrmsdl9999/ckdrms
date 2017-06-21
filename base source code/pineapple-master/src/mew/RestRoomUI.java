@@ -13,6 +13,7 @@ import javax.swing.tree.*;
 public class RestRoomUI extends JFrame implements ActionListener {
 
 	public int lastRoomNum = 1;
+	public int myRoomNum = 0;	// 나만의 채팅방의 번호는 항상0
 	public JButton makeRoomBtn, makeAnonymousRoomBtn, makeNormalRoomBtn, getInRoomBtn, sendBtn,friendBtn;
 	public JTree userTree;
 	public JTree friendTree;	//친구목록트리
@@ -78,8 +79,8 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		helpMenus.addActionListener(this);
 		menuBar.add(helpMenus);
 
-		JLabel myInfo = new JLabel("                                                                                                                                               "
-				 + client.getUser().getName() + "          " + client.getUser().getId() + "         " + client.getUser().getNickName());
+		JLabel myInfo = new JLabel("                                                                                                                                                    "
+				 + client.getUser().getName() + "         " + client.getUser().getId() + "      ");
 		myInfo.setForeground(Color.BLUE);
 		menuBar.add(myInfo);
 		
@@ -125,8 +126,9 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		JPanel panel_2 = new JPanel();
 		room.add(panel_2, BorderLayout.SOUTH);
 
-		makeRoomBtn = new JButton("일반 채팅방 만들기");	// +일반 채팅방 생성
+		makeRoomBtn = new JButton("일반 채팅방");	// +일반 채팅방 생성
 		makeRoomBtn.setBackground(Color.CYAN);
+		makeRoomBtn.setSize(100, 50);
 		makeRoomBtn.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e) { }
@@ -141,8 +143,9 @@ public class RestRoomUI extends JFrame implements ActionListener {
 			}
 		});
 		
-		makeAnonymousRoomBtn = new JButton("익명 채팅방 만들기");	// +익명 채팅방 생성
+		makeAnonymousRoomBtn = new JButton("익명 채팅방");	// +익명 채팅방 생성
 		makeAnonymousRoomBtn.setBackground(Color.CYAN);
+		makeAnonymousRoomBtn.setSize(100, 50);
 		makeAnonymousRoomBtn.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e) { }
@@ -156,169 +159,188 @@ public class RestRoomUI extends JFrame implements ActionListener {
 				createAnonymousRoom(roomName);
 			}
 		});
-		
-		makeRoomBtn.setSize(250, 50);
-		makeAnonymousRoomBtn.setSize(250, 50);
-		
 		panel_2.add(makeRoomBtn);
 		panel_2.add(makeAnonymousRoomBtn);
 
-		getInRoomBtn = new JButton("방 입장하기");
-		getInRoomBtn.setBackground(Color.CYAN);
-		getInRoomBtn.setSize(250, 50);
-		getInRoomBtn.addMouseListener(new MouseAdapter() 
+	//////////////////(문용, 나와의 채팅방)			
+	JButton makeMyRoomBtn = new JButton("나와의 채팅");
+	makeMyRoomBtn.addMouseListener(new MouseAdapter() {
+		@Override
+		public void mouseClicked(MouseEvent arg0) {// 방만들기 버튼 클릭
+			myRoomNum = 0;
+			createMyRoom();		//방만들기
+		}
+	});
+	panel_2.add(makeMyRoomBtn);
+	makeMyRoomBtn.setBackground(Color.CYAN);
+	makeMyRoomBtn.setSize(150, 50);
+	///////
+	
+	getInRoomBtn = new JButton("들어가기");
+	panel_2.add(getInRoomBtn);
+	getInRoomBtn.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		}
+	});
+	getInRoomBtn.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		}
+	});
+	getInRoomBtn.setSize(250, 50);
+	getInRoomBtn.addMouseListener(new MouseAdapter() 
+	{
+		@Override
+		public void mouseClicked(MouseEvent arg0)
 		{
-			@Override
-			public void mouseClicked(MouseEvent arg0)
-			{
-				// 방 들어가기
-				getIn();
-			}
-		});
-		panel_2.add(getInRoomBtn);
+			// 방 들어가기
+			getIn();
+		}
+	});
+	getInRoomBtn.setBackground(Color.CYAN);
+	getInRoomBtn.setVisible(true);
+	panel_2.add(getInRoomBtn);
+	
+	JPanel user = new JPanel();
+	user.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"),"사용자 목록", TitledBorder.CENTER,TitledBorder.TOP, null, Color.MAGENTA));
+	user.setBounds(506, 10, 171, 235);
+	getContentPane().add(user);
+	user.setLayout(new BorderLayout(0, 0));
 
-		JPanel user = new JPanel();
-		user.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"),"사용자 목록", TitledBorder.CENTER,TitledBorder.TOP, null, Color.MAGENTA));
-		user.setBounds(506, 10, 171, 235);
-		getContentPane().add(user);
-		user.setLayout(new BorderLayout(0, 0));
+	JScrollPane scrollPane_1 = new JScrollPane();
+	user.add(scrollPane_1, BorderLayout.CENTER);
 
-		JScrollPane scrollPane_1 = new JScrollPane();
-		user.add(scrollPane_1, BorderLayout.CENTER);
-
-		// 사용자목록, 트리구조
-		userTree = new JTree();
-		userTree.addTreeSelectionListener(new TreeSelectionListener() 
+	// 사용자목록, 트리구조
+	userTree = new JTree();
+	userTree.addTreeSelectionListener(new TreeSelectionListener() 
+	{
+		public void valueChanged(TreeSelectionEvent arg0) 
 		{
-			public void valueChanged(TreeSelectionEvent arg0) 
-			{
-				currentSelectedTreeNode = arg0.getPath().getLastPathComponent().toString();
-			}
-		});
-		level_1 = new DefaultMutableTreeNode("참여자");
-		level_2_1 = new DefaultMutableTreeNode("채팅방");
-		level_2_2 = new DefaultMutableTreeNode("대기실");
-		level_1.add(level_2_1);
-		level_1.add(level_2_2);
+			currentSelectedTreeNode = arg0.getPath().getLastPathComponent().toString();
+		}
+	});
+	level_1 = new DefaultMutableTreeNode("참여자");
+	level_2_1 = new DefaultMutableTreeNode("채팅방");
+	level_2_2 = new DefaultMutableTreeNode("대기실");
+	level_1.add(level_2_1);
+	level_1.add(level_2_2);
 
-		DefaultTreeModel model = new DefaultTreeModel(level_1);
-		userTree.setModel(model);
+	DefaultTreeModel model = new DefaultTreeModel(level_1);
+	userTree.setModel(model);
 
-		scrollPane_1.setViewportView(userTree);
+	scrollPane_1.setViewportView(userTree);
 
-		userTree.addMouseListener(new MouseAdapter()	// + 유저 트리에서 마우스 오른쪽 버튼으로 클릭 시
+	userTree.addMouseListener(new MouseAdapter()	// + 유저 트리에서 마우스 오른쪽 버튼으로 클릭 시
+	{
+		public void mousePressed(MouseEvent event)
 		{
-			public void mousePressed(MouseEvent event)
+			if(((event.getModifiers() & InputEvent.BUTTON3_MASK ) != 0) && (userTree.getSelectionCount() > 0))
 			{
-				if(((event.getModifiers() & InputEvent.BUTTON3_MASK ) != 0) && (userTree.getSelectionCount() > 0))
-				{
-					showMenuToUserTree(event.getX(), event.getY());
-				}
+				showMenuToUserTree(event.getX(), event.getY());
 			}
-		});
+		}
+	});
 		
-		
-		JPanel panel_1 = new JPanel();
-		user.add(panel_1, BorderLayout.SOUTH);
-		panel_1.setLayout(new GridLayout(1, 0, 0, 0));
+	
+	JPanel panel_1 = new JPanel();
+	user.add(panel_1, BorderLayout.SOUTH);
+	panel_1.setLayout(new GridLayout(1, 0, 0, 0));
 
-		JPanel restroom = new JPanel();
-		restroom.setBorder(new TitledBorder(UIManager
-				.getBorder("TitledBorder.border"), "대 기 실",
-				TitledBorder.CENTER, TitledBorder.TOP, null, Color.MAGENTA));
-		restroom.setBounds(12, 255, 497, 185);
-		getContentPane().add(restroom);
-		restroom.setLayout(new BorderLayout(0, 0));
+	JPanel restroom = new JPanel();
+	restroom.setBorder(new TitledBorder(UIManager
+			.getBorder("TitledBorder.border"), "대 기 실",
+			TitledBorder.CENTER, TitledBorder.TOP, null, Color.MAGENTA));
+	restroom.setBounds(12, 255, 497, 185);
+	getContentPane().add(restroom);
+	restroom.setLayout(new BorderLayout(0, 0));
 
-		JPanel panel = new JPanel();
-		restroom.add(panel, BorderLayout.SOUTH);
-		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+	JPanel panel = new JPanel();
+	restroom.add(panel, BorderLayout.SOUTH);
+	panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
-		JScrollPane scrollPane_4 = new JScrollPane();
-		panel.add(scrollPane_4);
+	JScrollPane scrollPane_4 = new JScrollPane();
+	panel.add(scrollPane_4);
 
-		chatField = new JTextField();
-		
-		chatField.addKeyListener(new KeyAdapter() 
+	chatField = new JTextField();
+	
+	chatField.addKeyListener(new KeyAdapter() 
+	{
+		@Override
+		public void keyPressed(KeyEvent e)
 		{
-			@Override
-			public void keyPressed(KeyEvent e)
-			{
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) 
-				{
-					msgSummit();
-				}
-			}
-		});
-		scrollPane_4.setViewportView(chatField);
-		chatField.setToolTipText("'/'키와 상대 유저의 id를 입력하고 말하면 귓속말 대화가 가능합니다. ex) /james 안녕하세요! ");	// +툴팁 추가
-		chatField.setColumns(10);
-
-		sendBtn = new JButton("보내기");
-		sendBtn.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseClicked(MouseEvent arg0)
+			if (e.getKeyCode() == KeyEvent.VK_ENTER) 
 			{
 				msgSummit();
-				chatField.requestFocus();
 			}
-		});
-		panel.add(sendBtn);
+		}
+	});
+	scrollPane_4.setViewportView(chatField);
+	chatField.setToolTipText("'/'키와 상대 유저의 id를 입력하고 말하면 귓속말 대화가 가능합니다. ex) /james 안녕하세요! ");	// +툴팁 추가
+	chatField.setColumns(10);
 
-		JScrollPane scrollPane_2 = new JScrollPane();
-		restroom.add(scrollPane_2, BorderLayout.CENTER);
-
-		restRoomArea = new JTextArea();
-		restRoomArea.setBackground(new Color(255, 255, 153));
-		restRoomArea.setEditable(false);
-		restRoomArea.setToolTipText("'/'키와 상대 유저의 id를 입력하고 말하면 귓속말 대화가 가능합니다. ex) /james 안녕하세요! ");	// +툴팁 추가
-		scrollPane_2.setViewportView(restRoomArea);
-		
-		JPanel panel9 = new JPanel();		//메인프레임 
-		panel9.setBackground(SystemColor.control);
-		panel9.setBounds(506, 255, 171, 185);
-		getContentPane().add(panel9);
-		panel9.setLayout(new BorderLayout(0, 0));
-		panel9.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"),
-				"친구 목록", TitledBorder.CENTER, TitledBorder.TOP, null, Color.MAGENTA));
-		JScrollPane scrollPane_9 = new JScrollPane();
-		panel9.add(scrollPane_9, BorderLayout.CENTER);
-		JPanel addfriendpannel = new JPanel();
-		panel9.add(addfriendpannel, BorderLayout.SOUTH);
-		addfriendpannel.setLayout(new GridLayout(1, 0, 0, 0));
-		
-		
-		friendTree = new JTree();	// 친구 목록  트리
-		friendTree.addTreeSelectionListener(new TreeSelectionListener() {
-
-			public void valueChanged(TreeSelectionEvent arg0) {
-				currentSelectedTreeNode = arg0.getPath().getLastPathComponent().toString();
-			}
-		});
-		level1 = new DefaultMutableTreeNode("친구 목록");
-		DefaultTreeModel model2 = new DefaultTreeModel(level1);
-		friendTree.setModel(model2);
-		
-		scrollPane_9.setViewportView(friendTree);
-
-		friendTree.addMouseListener(new MouseAdapter()	// + 친구목록 트리에서 마우스 오른쪽 버튼으로 클릭 시
+	sendBtn = new JButton("보내기");
+	sendBtn.addMouseListener(new MouseAdapter()
+	{
+		@Override
+		public void mouseClicked(MouseEvent arg0)
 		{
-			public void mousePressed(MouseEvent event)
-			{
-				if(((event.getModifiers() & InputEvent.BUTTON3_MASK ) != 0) && (friendTree.getSelectionCount() > 0))
-				{
-					showMenuToFriendTree(event.getX(), event.getY());
-				}
-			}
-		});
+			msgSummit();
+			chatField.requestFocus();
+		}
+	});
+	panel.add(sendBtn);
 
-		JPanel panel_9 = new JPanel();
-		panel9.add(panel_9, BorderLayout.NORTH);
-		panel_9.setLayout(new GridLayout(1, 0, 0, 0));
-		
+	JScrollPane scrollPane_2 = new JScrollPane();
+	restroom.add(scrollPane_2, BorderLayout.CENTER);
+
+	restRoomArea = new JTextArea();
+	restRoomArea.setBackground(new Color(255, 255, 153));
+	restRoomArea.setEditable(false);
+	restRoomArea.setToolTipText("'/'키와 상대 유저의 id를 입력하고 말하면 귓속말 대화가 가능합니다. ex) /james 안녕하세요! ");	// +툴팁 추가
+	scrollPane_2.setViewportView(restRoomArea);
+	
+	JPanel panel9 = new JPanel();		//메인프레임 
+	panel9.setBackground(SystemColor.control);
+	panel9.setBounds(506, 255, 171, 185);
+	getContentPane().add(panel9);
+	panel9.setLayout(new BorderLayout(0, 0));
+	panel9.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"),
+			"친구 목록", TitledBorder.CENTER, TitledBorder.TOP, null, Color.MAGENTA));
+	JScrollPane scrollPane_9 = new JScrollPane();
+	panel9.add(scrollPane_9, BorderLayout.CENTER);
+	JPanel addfriendpannel = new JPanel();
+	panel9.add(addfriendpannel, BorderLayout.SOUTH);
+	addfriendpannel.setLayout(new GridLayout(1, 0, 0, 0));
+	
+	
+	friendTree = new JTree();	// 친구 목록  트리
+	friendTree.addTreeSelectionListener(new TreeSelectionListener() {
+		public void valueChanged(TreeSelectionEvent arg0) {
+			currentSelectedTreeNode = arg0.getPath().getLastPathComponent().toString();
+		}
+	});
+	level1 = new DefaultMutableTreeNode("친구 목록");
+	DefaultTreeModel model2 = new DefaultTreeModel(level1);
+	friendTree.setModel(model2);
+	
+	scrollPane_9.setViewportView(friendTree);
+
+	friendTree.addMouseListener(new MouseAdapter()	// + 친구목록 트리에서 마우스 오른쪽 버튼으로 클릭 시
+	{
+		public void mousePressed(MouseEvent event)
+		{
+			if(((event.getModifiers() & InputEvent.BUTTON3_MASK ) != 0) && (friendTree.getSelectionCount() > 0))
+			{
+				showMenuToFriendTree(event.getX(), event.getY());
+			}
+		}
+	});
+
+	JPanel panel_9 = new JPanel();
+	panel9.add(panel_9, BorderLayout.NORTH);
+	panel_9.setLayout(new GridLayout(1, 0, 0, 0));
+	
 //////////////////////////////////////////내정보부분 안나타나게함
-		JPanel info = new JPanel();
+	JPanel info = new JPanel();
 //		info.setBorder(new TitledBorder(UIManager
 //				.getBorder("TitledBorder.border"), "내 정보",
 //				TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
@@ -326,55 +348,55 @@ public class RestRoomUI extends JFrame implements ActionListener {
 //		getContentPane().add(info);
 //		info.setLayout(null);
 ///////////////////////////////////////
-		JLabel lblNewLabel = new JLabel("IP");
-		lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblNewLabel.setBounds(-25, 20, 57, 15);
-		info.add(lblNewLabel);
+	JLabel lblNewLabel = new JLabel("IP");
+	lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+	lblNewLabel.setBounds(-25, 20, 57, 15);
+	info.add(lblNewLabel);
 
-		JLabel lblNewLabel_2 = new JLabel("아이디");
-		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
-		lblNewLabel_2.setBounds(0, 60, 57, 15);
-		info.add(lblNewLabel_2);
+	JLabel lblNewLabel_2 = new JLabel("아이디");
+	lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
+	lblNewLabel_2.setBounds(0, 60, 57, 15);
+	info.add(lblNewLabel_2);
 
-		JLabel lblNewLabel_3 = new JLabel("이름");
-		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
-		lblNewLabel_3.setBounds(0, 100, 57, 15);
-		info.add(lblNewLabel_3);
-		
-		JLabel lblNewLabel_4 = new JLabel("닉네임");
-		lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
-		lblNewLabel_4.setBounds(0, 140, 57, 15);
-		info.add(lblNewLabel_4);
+	JLabel lblNewLabel_3 = new JLabel("이름");
+	lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
+	lblNewLabel_3.setBounds(0, 100, 57, 15);
+	info.add(lblNewLabel_3);
+	
+	JLabel lblNewLabel_4 = new JLabel("닉네임");
+	lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
+	lblNewLabel_4.setBounds(0, 140, 57, 15);
+	info.add(lblNewLabel_4);
 
-		lb_id = new JLabel("-");
-		info.add(lb_id);
-		lb_id.setBounds(57, 60, 102, 15);
+	lb_id = new JLabel("-");
+	info.add(lb_id);
+	lb_id.setBounds(57, 60, 102, 15);
 
-		lb_name = new JLabel("-");
-		lb_name.setBounds(57, 100, 102, 15);
-		info.add(lb_name);
-		
-		lb_nick = new JLabel("-");
-		lb_nick.setBounds(57, 140, 102, 15);
-		info.add(lb_nick);
-		
-		lb_ip = new JTextField();
-		lb_ip.setBounds(57, 20, 102, 21);
-		lb_ip.setEditable(false);
-		info.add(lb_ip);
-		lb_ip.setColumns(10);
-		chatField.requestFocus();
-		setVisible(true);
-		chatField.requestFocus();
+	lb_name = new JLabel("-");
+	lb_name.setBounds(57, 100, 102, 15);
+	info.add(lb_name);
+	
+	lb_nick = new JLabel("-");
+	lb_nick.setBounds(57, 140, 102, 15);
+	info.add(lb_nick);
+	
+	lb_ip = new JTextField();
+	lb_ip.setBounds(57, 20, 102, 21);
+	lb_ip.setEditable(false);
+	info.add(lb_ip);
+	lb_ip.setColumns(10);
+	chatField.requestFocus();
+	setVisible(true);
+	chatField.requestFocus();
 
-		this.addWindowListener(new WindowAdapter() 
-		{	
-			public void windowClosing(WindowEvent e) 
-			{
-				exit();
-			}
-		});
-	}
+	this.addWindowListener(new WindowAdapter() 
+	{	
+		public void windowClosing(WindowEvent e) 
+		{
+			exit();
+		}
+	});
+}
 
 	@Override
 	public void actionPerformed(ActionEvent e) 
@@ -615,7 +637,28 @@ public class RestRoomUI extends JFrame implements ActionListener {
 		} 
 		catch (IOException e) 
 		{
-			e.printStackTrace();
+			e.getMessage();
+		}
+	}
+	
+	//(문용, 수정) 대기실 목록에 만들어진 방 추가하지 않기	
+	private void createMyRoom() {		//createRoom 메소드
+		String roomname = "나와의 채팅방";		//방이름
+		Room myRoom = new Room(roomname); // 방 객체 생성.		
+		myRoom.setRoomNum(myRoomNum);			//Room의 setRoomNum메소드 확인, 내 방은 방번호 0
+		myRoom.setRoomType("독백");
+		myRoom.setmrUI(new MyRoomUI(client, myRoom)); // RoomUI생성 후 client와 newRoom을 매개변수로 전달.
+
+		// 클라이언트의 myRoom만들기
+		client.getUser().getRoomArray().add(myRoom);		//내 방 만들어서 RestRoomUI의 객체 myRoom에 전달
+		//		//client 객체 내 getuser()메소드 실행
+												//user.getRoomArray()메소드 실행.
+												//arrayList<Room>에 새로운 방을 add한다. newRoom은 방금 만들어진 방이다.
+		try { 
+			client.getDos().writeUTF(			//client객체에서 getdos()호출, DataOutPutStream.writeUTF()실행
+			User.CREATE_ROOM + "/" + myRoom.toProtocol());	//DataOutPutStream.writeUTF는 서버에 ()내 문자열을 보낸다.
+		} catch (IOException e) {							//보내는 메시지 : myRoom/roomNum/roomName
+			e.printStackTrace();							//serverThread의 readUTF로 읽음
 		}
 	}
 	

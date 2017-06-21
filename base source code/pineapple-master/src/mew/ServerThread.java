@@ -162,6 +162,19 @@ public class ServerThread implements Runnable {
 			msg = token.nextToken();
 			echoMsg(rNum, msg);
 			break;
+			///문용, 추가 나와의 채팅방
+		case User.ECHO03: // 채팅방 에코
+			rNum = token.nextToken();
+			msg = token.nextToken();
+			echoSoloMsg(rNum, msg);
+			break;
+///////(문용, 추가)	챗봇을 위한 코드
+		case User.ECHOBOT: // 챗봇
+			rNum = token.nextToken();
+			msg = token.nextToken();
+			echoMsgWithBot(rNum, msg);
+			break;
+				//////////
 		case User.WHISPER: // 귓속말
 			id = token.nextToken();
 			msg = token.nextToken();
@@ -258,16 +271,21 @@ public class ServerThread implements Runnable {
 		roomArray.add(rm); // 룸리스트에 현재 채팅방 추가
 		user.getRoomArray().add(rm); // 사용자 객체에 접속한 채팅방을 저장
 		
-		if(rType.equals("일반"))	// +익명방과 일반방 개설을 나눠줌
+		if(rType.equals("일반"))	// +일반방과 익명, 나와의 채팅방 개설을 나눠줌
 		{
 			echoMsg(User.ECHO01 + "/" + user.toString() + "님이 " + rm.getRoomNum()+ "번 일반 채팅방을 개설하셨습니다.");
 			echoMsg(rm, user.toString() + "님이 입장하셨습니다.");
 		}
-		else
+		else if(rType.equals("익명"))
 		{
 			echoMsg(User.ECHO01 + "/" + user.toNickNameString() + "님이 " + rm.getRoomNum()+ "번 익명 채팅방을 개설하셨습니다.");		// + 방 타입마다 다른 메시지가 나오게 수정
 			echoMsg(rm, user.toNickNameString() + "님이 입장하셨습니다.");
 		}
+		else
+		{
+			//echoSoloMsg(User.ECHO03 + "/" + user.toNickNameString() + "님이 " + rm.getRoomNum()+ "번 나와의 채팅방을 개설하셨습니다.");		// + 방 타입마다 다른 메시지가 나오게 수정
+			echoSoloMsg(rm, user.toNickNameString() + "님이 입장하셨습니다.");
+		}	
 		roomList();
 		userList(rNum, thisUser);
 		jta.append("성공 : " + userArray.toString() + "가 채팅방생성\n");
@@ -322,6 +340,56 @@ public class ServerThread implements Runnable {
 			}
 		}
 	}
+///////////////문용 추가	
+	private void echoSoloMsg(String rNum, String msg) {		//방 번호만 아는 경우
+		for (int i = 0; i < roomArray.size(); i++) {
+			if (Integer.parseInt(rNum) == roomArray.get(i).getRoomNum()) {
+				echoSoloMsg(roomArray.get(i), msg);
+			}
+		}
+	}
+	
+	private void echoSoloMsg(Room room, String msg) {			//방 객체로 호출
+		for (int i = 0; i < room.getUserArray().size(); i++) {
+			try {
+				// 방에 참가한 유저들에게 에코 메시지 전송
+				room.getUserArray().get(i).getDos().writeUTF(User.ECHO03 + "/" + room.getRoomNum() + "/"+ msg + "/" + room.getRoomType());	// +roomType도 받아오게 추가
+				jta.append("성공 : 메시지전송 : " + msg + "\n");
+			} catch (IOException e) {
+				e.printStackTrace();
+				jta.append("에러 : 에코 실패\n");
+			}
+		}
+	}
+///////////
+////////////(문용, 추가) 방 번호만 아는 경우, 챗봇이 잘 작동하는 지 서버화면에서 확인하도록 돕는 코드	
+	private void echoMsgWithBot(String rNum, String msg) {
+		for (int i = 0; i < roomArray.size(); i++) {
+			if (Integer.parseInt(rNum) == roomArray.get(i).getRoomNum()) {
+					echoMsgWithBot(roomArray.get(i), msg);			
+			}
+		}
+	}
+			
+			///////////////////////(문용, 추가) ChatBot과의 대화를 위해 채팅방에 실제 띄울 코드
+			private void echoMsgWithBot(Room room, String msg) {
+			for (int i = 0; i < room.getUserArray().size(); i++) {
+				try {
+					// 방에 참가한 유저들에게 에코 메시지 전송
+					room.getUserArray()
+							.get(i)
+							.getDos()
+							.writeUTF(
+									User.ECHOBOT + "/" + room.getRoomNum() + "/"
+											+ msg);
+					jta.append("성공 : 메시지전송 : " + msg + "\n");
+				} catch (IOException e) {
+					e.printStackTrace();
+					jta.append("에러 : 에코 실패\n");
+				}
+		}
+	}
+/////////////
 
 	public void changePw(String myId, String pw) {	// 비밀번호 변경
 		File file = new File("C:\\members\\" + id + ".txt");
